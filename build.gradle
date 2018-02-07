@@ -1,0 +1,17 @@
+repositories {
+    mavenCentral()
+    maven {
+        name = 'sponge'
+        url = 'http://repo.spongepowered.org/maven'
+    }
+    maven {
+        url 'https://jitpack.io'
+    }
+}
+
+apply plugin: 'java'
+
+dependencies {
+    compile 'org.spongepowered:spongeapi:7.0.0'
+    compile 'com.github.NucleusPowered.Nucleus:nucleus-api:1.0.0-6.0'
+}

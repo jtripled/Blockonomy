@@ -1,0 +1,16 @@
+build
+.gradle
+.idea
+*.iml
+*.jar
+.settings
+bin
+.classpath
+.project
+!gradle-wrapper.jar
+MANIFEST.MF
+.nb-gradle
+
+# Mac Stuff
+.DS_STORE
+/.nb-gradle/
