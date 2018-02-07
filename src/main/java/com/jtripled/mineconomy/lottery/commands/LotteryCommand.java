@@ -2,7 +2,7 @@ package com.jtripled.mineconomy.lottery.commands;
 
 import com.jtripled.mineconomy.lottery.LotteryService;
 import com.jtripled.mineconomy.lottery.LotteryText;
-import java.math.BigDecimal;
+import com.jtripled.sponge.util.TextUtil;
 import java.text.DecimalFormat;
 import java.util.Optional;
 import org.spongepowered.api.Sponge;
@@ -39,18 +39,12 @@ public class LotteryCommand implements CommandExecutor
     @Override
     public CommandResult execute(CommandSource src, CommandContext args) throws CommandException
     {
-        if (!(src instanceof Player))
+        Optional<ProviderRegistration<LotteryService>> opLottery = Sponge.getServiceManager().getRegistration(LotteryService.class);
+        
+        /* Could not find lottery service. */
+        if (!opLottery.isPresent())
         {
-            return CommandResult.empty();
-        }
-        
-        Player player = (Player) src;
-        
-        Optional<ProviderRegistration<LotteryService>> opService = Sponge.getServiceManager().getRegistration(LotteryService.class);
-        
-        /* Could not find payday service. */
-        if (!opService.isPresent())
-        {
+            src.sendMessage(TextUtil.serviceNotFound("LotteryService"));
             return CommandResult.empty();
         }
         
@@ -59,29 +53,41 @@ public class LotteryCommand implements CommandExecutor
         /* Could not find economy service. */
         if (!opEconomy.isPresent())
         {
+            src.sendMessage(TextUtil.serviceNotFound("EconomyService"));
             return CommandResult.empty();
         }
         
-        LotteryService lottery = opService.get().getProvider();
+        LotteryService lottery = opLottery.get().getProvider();
         EconomyService economy = opEconomy.get().getProvider();
         
         if (!lottery.isLotteryRunning())
         {
-            Text msg = Text.of(TextColors.RED, "There is no lottery currently running.");
-            src.sendMessage(msg);
+            src.sendMessage(LotteryText.noRunningLotteryText());
             return CommandResult.success();
         }
         
-        DecimalFormat format = new DecimalFormat("#0.00");
-        Text topBorder = Text.of("====================== ", TextColors.GREEN, "Lottery", TextColors.WHITE, " =======================");
-        Text timeMsg = Text.of(TextColors.GREEN, "Time remaining: ", TextColors.YELLOW, lottery.minutesRemaining(), " minutes");
-        Text costMsg = Text.of(TextColors.GREEN, "Ticket cost: ", TextColors.YELLOW, format.format(lottery.getCost()), " ",
-            (lottery.getCost().compareTo(BigDecimal.ONE) != 0 ? economy.getDefaultCurrency().getPluralDisplayName().toPlain() : economy.getDefaultCurrency().getDisplayName().toPlain()));
-        Text currentMsg = Text.of(TextColors.GREEN, "Current tickets: ", TextColors.YELLOW, lottery.getPlayerTicketCount(player));
-        Text prizeMsg = Text.of(TextColors.GREEN, "Prize: ", TextColors.YELLOW, lottery.getPrize().getText());
-        Text bottomBorder = Text.of("=====================================================");
+        if (src instanceof Player)
+        {
+            Player player = (Player) src;
+            Text topBorder = Text.of("====================== ", TextColors.GREEN, "Lottery", TextColors.WHITE, " =======================");
+            Text timeMsg = Text.of(TextColors.GREEN, "Time remaining: ", TextColors.YELLOW, TextUtil.pluralize(lottery.minutesRemaining(), "minute", "minutes"));
+            Text costMsg = Text.of(TextColors.GREEN, "Ticket cost: ", TextUtil.pluralize(lottery.getCost(), economy.getDefaultCurrency().getDisplayName().toPlain(), economy.getDefaultCurrency().getPluralDisplayName().toPlain(), new DecimalFormat("#0.00")));
+            Text currentMsg = Text.of(TextColors.GREEN, "Current tickets: ", TextColors.YELLOW, lottery.getPlayerTicketCount(player));
+            Text prizeMsg = Text.of(TextColors.GREEN, "Prize: ", TextColors.YELLOW, lottery.getPrize().getText());
+            Text bottomBorder = Text.of("=====================================================");
+            src.sendMessages(topBorder, timeMsg, costMsg, currentMsg, prizeMsg, Text.of(""), LotteryText.BUY_TEXT, bottomBorder);
+        }
+        else
+        {
+            Text topBorder = Text.of("====================== ", TextColors.GREEN, "Lottery", TextColors.WHITE, " =======================");
+            Text timeMsg = Text.of(TextColors.GREEN, "Time remaining: ", TextColors.YELLOW, TextUtil.pluralize(lottery.minutesRemaining(), "minute", "minutes"));
+            Text costMsg = Text.of(TextColors.GREEN, "Ticket cost: ", TextUtil.pluralize(lottery.getCost(), economy.getDefaultCurrency().getDisplayName().toPlain(), economy.getDefaultCurrency().getPluralDisplayName().toPlain(), new DecimalFormat("#0.00")));
+            Text currentMsg = Text.of(TextColors.GREEN, "Total tickets: ", TextColors.YELLOW, lottery.getTotalTicketCount());
+            Text prizeMsg = Text.of(TextColors.GREEN, "Prize: ", TextColors.YELLOW, lottery.getPrize().getText());
+            Text bottomBorder = Text.of("=====================================================");
+            src.sendMessages(topBorder, timeMsg, costMsg, currentMsg, prizeMsg, bottomBorder);
+        }
         
-        src.sendMessages(topBorder, timeMsg, costMsg, currentMsg, prizeMsg, Text.of(""), LotteryText.BUY_TEXT, bottomBorder);
         return CommandResult.success();
     }
 }

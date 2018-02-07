@@ -1,8 +1,9 @@
 package com.jtripled.mineconomy.lottery.commands;
 
 import com.jtripled.mineconomy.lottery.LotteryService;
+import com.jtripled.mineconomy.lottery.LotteryText;
+import com.jtripled.sponge.util.TextUtil;
 import java.math.BigDecimal;
-import java.text.DecimalFormat;
 import java.util.Optional;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandException;
@@ -16,7 +17,6 @@ import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.service.ProviderRegistration;
 import org.spongepowered.api.service.economy.EconomyService;
 import org.spongepowered.api.text.Text;
-import org.spongepowered.api.text.format.TextColors;
 
 /**
  *
@@ -36,17 +36,18 @@ public class BuyCommand implements CommandExecutor
     {
         if (!(src instanceof Player))
         {
-            src.sendMessage(Text.of("This command can only be send by players."));
+            src.sendMessage(TextUtil.playerOnly());
             return CommandResult.empty();
         }
         
         Player player = (Player) src;
         
-        Optional<ProviderRegistration<LotteryService>> opService = Sponge.getServiceManager().getRegistration(LotteryService.class);
+        Optional<ProviderRegistration<LotteryService>> opLottery = Sponge.getServiceManager().getRegistration(LotteryService.class);
         
-        /* Could not find payday service. */
-        if (!opService.isPresent())
+        /* Could not find lottery service. */
+        if (!opLottery.isPresent())
         {
+            src.sendMessage(TextUtil.serviceNotFound("LotteryService"));
             return CommandResult.empty();
         }
         
@@ -55,30 +56,24 @@ public class BuyCommand implements CommandExecutor
         /* Could not find economy service. */
         if (!opEconomy.isPresent())
         {
+            src.sendMessage(TextUtil.serviceNotFound("EconomyService"));
             return CommandResult.empty();
         }
         
+        LotteryService lottery = opLottery.get().getProvider();
         EconomyService economy = opEconomy.get().getProvider();
-        LotteryService lottery = opService.get().getProvider();
         
-        int quantity = 1;
-        
-        if (args.hasAny("quantity"))
-            quantity = (int) args.getOne("quantity").get();
+        int quantity = args.hasAny("quantity") ? (int) args.getOne("quantity").get() : 1;
         
         BigDecimal cost = lottery.getCost().multiply(BigDecimal.valueOf(quantity));
         
         if (!lottery.buyTickets(player, quantity))
         {
-            src.sendMessage(Text.of(TextColors.RED, "You cannot afford that many tickets."));
+            src.sendMessage(LotteryText.buyTicketInsufficientFundsText());
             return CommandResult.empty();
         }
         
-        DecimalFormat format = new DecimalFormat("#0.00");
-        src.sendMessage(Text.of(TextColors.GREEN, "You've purchased ", TextColors.YELLOW, quantity, " tickets ",
-                TextColors.GREEN, "for ", TextColors.YELLOW, format.format(cost), " ",
-                cost.compareTo(BigDecimal.ONE) != 0 ? economy.getDefaultCurrency().getPluralDisplayName().toPlain() : economy.getDefaultCurrency().getDisplayName().toPlain(),
-                TextColors.GREEN, "."));
+        src.sendMessage(LotteryText.buyTicketText(quantity, cost, economy.getDefaultCurrency().getDisplayName().toPlain(), economy.getDefaultCurrency().getPluralDisplayName().toPlain()));
         
         return CommandResult.success();
     }

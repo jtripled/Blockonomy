@@ -1,7 +1,8 @@
 package com.jtripled.mineconomy.payday.commands;
 
 import com.jtripled.mineconomy.Mineconomy;
-import com.jtripled.mineconomy.payday.PaydayService;
+import com.jtripled.mineconomy.payday.PaydayText;
+import com.jtripled.sponge.util.TextUtil;
 import java.io.IOException;
 import java.util.Optional;
 import org.spongepowered.api.Sponge;
@@ -14,51 +15,55 @@ import org.spongepowered.api.command.spec.CommandExecutor;
 import org.spongepowered.api.command.spec.CommandSpec;
 import org.spongepowered.api.service.ProviderRegistration;
 import org.spongepowered.api.text.Text;
-import org.spongepowered.api.text.format.TextColors;
+import com.jtripled.mineconomy.payday.PaydayService;
 
 /**
  *
  * @author jtripled
  */
-public class IntervalCommand implements CommandExecutor
+public class FrequencyCommand implements CommandExecutor
 {
     public static final CommandSpec SPEC = CommandSpec.builder()
-        .description(Text.of("Set the payment intervals."))
+        .description(Text.of("Set the payday frequency in minutes."))
         .permission("mineconomy.payday.admin")
-        .executor(new IntervalCommand())
+        .executor(new FrequencyCommand())
         .arguments(GenericArguments.integer(Text.of("minutes")))
         .build();
 
     @Override
     public CommandResult execute(CommandSource src, CommandContext args) throws CommandException
     {
-        Optional<ProviderRegistration<PaydayService>> opService = Sponge.getServiceManager().getRegistration(PaydayService.class);
+        Optional<ProviderRegistration<PaydayService>> opPayday = Sponge.getServiceManager().getRegistration(PaydayService.class);
         
         /* Could not find payday service. */
-        if (!opService.isPresent())
+        if (!opPayday.isPresent())
         {
+            src.sendMessage(TextUtil.serviceNotFound("PaydayService"));
             return CommandResult.empty();
         }
         
-        PaydayService payday = opService.get().getProvider();
+        PaydayService payday = opPayday.get().getProvider();
         
-        int minutes = (Integer) args.getOne("minutes").get();
+        int minutes = (int) args.getOne("minutes").get();
+        
+        /* Can't set frequency below 1 minute. */
         if (minutes < 1)
         {
+            src.sendMessage(PaydayText.invalidFrequencyText());
             return CommandResult.empty();
         }
         
         try
         {
-            payday.setInterval(minutes);
-            Text msg = Text.of(TextColors.GREEN, "You've set the payday frequency to ", TextColors.YELLOW, minutes, " minutes", TextColors.GREEN, ".");
-            src.sendMessage(msg);
+            payday.setFrequency(minutes);
+            src.sendMessage(PaydayText.setFrequencyText(minutes));
+            return CommandResult.success();
         }
         catch (IOException ex)
         {
+            src.sendMessage(PaydayText.setFrequencyErrorText());
             Mineconomy.getLogger().error(null, ex);
+            return CommandResult.empty();
         }
-        
-        return CommandResult.success();
     }
 }

@@ -1,5 +1,8 @@
 package com.jtripled.mineconomy.lottery;
 
+import com.jtripled.sponge.util.TextUtil;
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.action.TextActions;
 import org.spongepowered.api.text.format.TextColors;
@@ -63,4 +66,88 @@ public class LotteryText
     public static final Text END_TEXT_2 = Text.of(TextColors.GREEN, "! Congratulations!");
     
     public static final Text REFUND_TEXT = Text.of(TextColors.GREEN, "You're money has been refunded.");
+    
+    public static Text buyTicketInsufficientFundsText()
+    {
+        return Text.of(TextColors.RED, "You cannot afford that many tickets.");
+    }
+    
+    public static Text buyTicketText(int count, BigDecimal cost, String singular, String plural)
+    {
+        return Text.of(TextColors.GREEN, "You've purchased ", TextColors.YELLOW,
+                count, TextUtil.pluralize(count, "ticket", "tickets"),
+                TextColors.GREEN, "for ", TextColors.YELLOW,
+                TextUtil.pluralize(cost.multiply(BigDecimal.valueOf(count)), singular, plural, new DecimalFormat("#0.00")),
+                TextColors.GREEN, ".");
+    }
+    
+    public static Text setChanceText(double chance)
+    {
+        return Text.of(TextColors.GREEN, "You've set the lottery chance to ", TextColors.YELLOW, String.format("%.0f",chance * 100), "%", TextColors.GREEN, ".");
+    }
+    
+    public static Text setFrequencyText(int minutes)
+    {
+        return Text.of(TextColors.GREEN, "You've set the lottery frequency to ", TextColors.YELLOW, TextUtil.pluralize(minutes, "minute", "minutes"), TextColors.GREEN, ".");
+    }
+    
+    public static Text setDurationText(int minutes)
+    {
+        return Text.of(TextColors.GREEN, "You've set the lottery duration to ", TextColors.YELLOW, TextUtil.pluralize(minutes, "minute", "minutes"), TextColors.GREEN, ".");
+    }
+    
+    public static Text setCostText(BigDecimal minutes, String singular, String plural)
+    {
+        return Text.of(TextColors.GREEN, "You've set the lottery cost to ", TextColors.YELLOW, TextUtil.pluralize(minutes, singular, plural), TextColors.GREEN, ".");
+    }
+    
+    public static Text invalidChanceText()
+    {
+        return Text.of(TextColors.RED, "Lottery chance must be between ",
+                TextColors.YELLOW, "0.01", TextColors.RED, " and ", TextColors.YELLOW, "1.00",
+                TextColors.RED, ".");
+    }
+    
+    public static Text invalidFrequencyText()
+    {
+        return Text.of(TextColors.RED, "You cannot set lottery frequency below ",
+                TextColors.YELLOW, "1 minute", TextColors.RED, ".");
+    }
+    
+    public static Text invalidDurationText()
+    {
+        return Text.of(TextColors.RED, "You cannot set lottery duration below ",
+                TextColors.YELLOW, "1 minute", TextColors.RED, ".");
+    }
+    
+    public static Text invalidCostText(String plural)
+    {
+        return Text.of(TextColors.RED, "You cannot set lottery cost below ",
+                TextColors.YELLOW, "0.00 ", plural, TextColors.RED, ".");
+    }
+    
+    public static Text setChanceErrorText()
+    {
+        return Text.of(TextColors.RED, "There was an error setting the lottery chance.");
+    }
+    
+    public static Text setFrequencyErrorText()
+    {
+        return Text.of(TextColors.RED, "There was an error setting the lottery frequency.");
+    }
+    
+    public static Text setDurationErrorText()
+    {
+        return Text.of(TextColors.RED, "There was an error setting the lottery duration.");
+    }
+    
+    public static Text setCostErrorText()
+    {
+        return Text.of(TextColors.RED, "There was an error setting the lottery cost.");
+    }
+    
+    public static Text noRunningLotteryText()
+    {
+        return Text.of(TextColors.RED, "There is no lottery currently running.");
+    }
 }

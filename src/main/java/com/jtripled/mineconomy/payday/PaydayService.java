@@ -10,19 +10,21 @@ import org.spongepowered.api.entity.living.player.Player;
  */
 public interface PaydayService
 {
-    public boolean decrementCooldown(Player player);
+    public void setFrequency(int minutes) throws IOException;
+    
+    public void setAmount(BigDecimal amount) throws IOException;
     
     public void setJoinBonus(BigDecimal joinBonus) throws IOException;
     
-    public void setInterval(int minutes) throws IOException;
+    public int getFrequency();
     
-    public void setPaycheck(BigDecimal amount) throws IOException;
-    
-    public int getCooldown(Player player);
+    public BigDecimal getAmount();
     
     public BigDecimal getJoinBonus();
     
-    public int getInterval();
+    public boolean decrementCooldown(Player player);
     
-    public BigDecimal getPaycheck();
+    public int getCooldown(Player player);
+    
+    public void resetCooldown(Player player);
 }

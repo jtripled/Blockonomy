@@ -6,7 +6,6 @@ import io.github.nucleuspowered.nucleus.api.events.NucleusFirstJoinEvent;
 import io.github.nucleuspowered.nucleus.api.service.NucleusAFKService;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.text.DecimalFormat;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import org.spongepowered.api.Sponge;
@@ -19,8 +18,6 @@ import org.spongepowered.api.scheduler.Task;
 import org.spongepowered.api.service.ProviderRegistration;
 import org.spongepowered.api.service.economy.EconomyService;
 import org.spongepowered.api.service.economy.account.UniqueAccount;
-import org.spongepowered.api.text.Text;
-import org.spongepowered.api.text.format.TextColors;
 
 /**
  *
@@ -43,7 +40,7 @@ public class PaydayModule
         /* Add Payday task. */
         Task.Builder taskBuilder = Sponge.getScheduler().createTaskBuilder();
         paydayTask = taskBuilder.execute((Task t1) -> {
-            BigDecimal paycheck = this.paydayService.getPaycheck();
+            BigDecimal paycheck = this.paydayService.getAmount();
             if (paycheck.compareTo(BigDecimal.ZERO) > 0)
             {
                 Optional<ProviderRegistration<EconomyService>> opEconomy = Sponge.getServiceManager().getRegistration(EconomyService.class);
@@ -71,17 +68,11 @@ public class PaydayModule
                         UniqueAccount account = opAccount.get();
         
                         /* Award paycheck. */
-                        DecimalFormat format = new DecimalFormat("#0.00");
-                        String name = economy.getDefaultCurrency().getDisplayName().toPlain();
-                        if (paycheck.compareTo(BigDecimal.ONE) != 0)
-                        {
-                            name = economy.getDefaultCurrency().getPluralDisplayName().toPlain();
-                        }
                         account.deposit(economy.getDefaultCurrency(), paycheck, Cause.of(EventContext.empty(), Mineconomy.INSTANCE));
-                        player.sendMessage(Text.of(TextColors.GREEN,
-                                "You've earned a paycheck of ", TextColors.YELLOW,
-                                format.format(paycheck), " ", name, TextColors.GREEN, "! ",
-                                "Thanks for playing!"));
+                        player.sendMessage(PaydayText.paydayText(paycheck, economy.getDefaultCurrency().getDisplayName().toPlain(), economy.getDefaultCurrency().getPluralDisplayName().toPlain()));
+                        
+                        /* Reset cooldown. */
+                        this.paydayService.resetCooldown(player);
                     }
                 });
             }
@@ -133,15 +124,7 @@ public class PaydayModule
         UniqueAccount account = opAccount.get();
         
         /* Award join bonus. */
-        DecimalFormat format = new DecimalFormat("#0.00");
-        String name = economy.getDefaultCurrency().getDisplayName().toPlain();
-        if (joinBonus.compareTo(BigDecimal.ONE) != 0)
-        {
-            name = economy.getDefaultCurrency().getPluralDisplayName().toPlain();
-        }
         account.deposit(economy.getDefaultCurrency(), joinBonus, Cause.of(EventContext.empty(), Mineconomy.INSTANCE));
-        player.sendMessage(Text.of(TextColors.GREEN,
-                "Welcome to our server! You've been awarded ", TextColors.YELLOW,
-                format.format(joinBonus), " ", name, TextColors.GREEN, "!"));
+        player.sendMessage(PaydayText.joinBonusText(joinBonus, economy.getDefaultCurrency().getDisplayName().toPlain(), economy.getDefaultCurrency().getPluralDisplayName().toPlain()));
     }
 }

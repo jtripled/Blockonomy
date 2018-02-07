@@ -2,6 +2,8 @@ package com.jtripled.mineconomy.lottery.commands;
 
 import com.jtripled.mineconomy.Mineconomy;
 import com.jtripled.mineconomy.lottery.LotteryService;
+import com.jtripled.mineconomy.lottery.LotteryText;
+import com.jtripled.sponge.util.TextUtil;
 import java.io.IOException;
 import java.util.Optional;
 import org.spongepowered.api.Sponge;
@@ -14,7 +16,6 @@ import org.spongepowered.api.command.spec.CommandExecutor;
 import org.spongepowered.api.command.spec.CommandSpec;
 import org.spongepowered.api.service.ProviderRegistration;
 import org.spongepowered.api.text.Text;
-import org.spongepowered.api.text.format.TextColors;
 
 /**
  *
@@ -26,39 +27,41 @@ public class ChanceCommand implements CommandExecutor
         .description(Text.of("Set the lottery chance."))
         .permission("mineconomy.admin")
         .executor(new ChanceCommand())
-        .arguments(GenericArguments.integer(Text.of("chance")))
+        .arguments(GenericArguments.doubleNum(Text.of("chance")))
         .build();
 
     @Override
     public CommandResult execute(CommandSource src, CommandContext args) throws CommandException
     {
-        Optional<ProviderRegistration<LotteryService>> opService = Sponge.getServiceManager().getRegistration(LotteryService.class);
+        Optional<ProviderRegistration<LotteryService>> opLottery = Sponge.getServiceManager().getRegistration(LotteryService.class);
         
-        /* Could not find payday service. */
-        if (!opService.isPresent())
+        /* Could not find lottery service. */
+        if (!opLottery.isPresent())
         {
+            src.sendMessage(TextUtil.serviceNotFound("LotteryService"));
             return CommandResult.empty();
         }
         
-        LotteryService lottery = opService.get().getProvider();
+        LotteryService lottery = opLottery.get().getProvider();
         
         double chance = (Double) args.getOne("chance").get();
         if (chance <= 0.00d || chance > 1.00d)
         {
+            src.sendMessage(LotteryText.invalidChanceText());
             return CommandResult.empty();
         }
         
         try
         {
+            src.sendMessage(LotteryText.setChanceText(chance));
             lottery.setChance(chance);
-            Text msg = Text.of(TextColors.GREEN, "You've set the lottery chance to ", TextColors.YELLOW, String.format("%.0f",chance * 100), "%", TextColors.GREEN, ".");
-            src.sendMessage(msg);
+            return CommandResult.success();
         }
         catch (IOException ex)
         {
+            src.sendMessage(LotteryText.setChanceErrorText());
             Mineconomy.getLogger().error(null, ex);
+            return CommandResult.empty();
         }
-        
-        return CommandResult.success();
     }
 }

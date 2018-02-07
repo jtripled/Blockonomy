@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import ninja.leaping.configurate.ConfigurationNode;
@@ -28,20 +27,20 @@ public class PaydayServiceProvider implements PaydayService
     private ConfigurationNode rootNode;
     
     private BigDecimal joinBonus;
-    private BigDecimal paycheck;
-    private int interval;
+    private BigDecimal amount;
+    private int frequency;
     private final Map<Player, Integer> cooldowns;
     
     public PaydayServiceProvider() throws IOException
     {
-        loadConfig();
+        this.loadConfig();
         this.cooldowns = new HashMap<>();
     }
     
     @Listener
     public void onReload(GameReloadEvent event) throws IOException
     {
-        loadConfig();
+        this.loadConfig();
     }
     
     private void loadConfig() throws IOException
@@ -58,29 +57,19 @@ public class PaydayServiceProvider implements PaydayService
         rootNode.mergeValuesFrom(loader.load());
         loader.save(rootNode);
         this.joinBonus = BigDecimal.valueOf(rootNode.getNode("join-bonus").getDouble());
-        this.paycheck = BigDecimal.valueOf(rootNode.getNode("amount").getDouble());
-        this.interval = rootNode.getNode("frequency").getInt();
+        this.amount = BigDecimal.valueOf(rootNode.getNode("amount").getDouble());
+        this.frequency = rootNode.getNode("frequency").getInt();
         if (this.joinBonus.compareTo(BigDecimal.ZERO) < 0)
             setJoinBonus(BigDecimal.ZERO);
-        if (this.paycheck.compareTo(BigDecimal.ZERO) < 0)
-            setPaycheck(BigDecimal.ZERO);
-        if (this.interval < 1)
-            setInterval(1);
+        if (this.amount.compareTo(BigDecimal.ZERO) < 0)
+            setAmount(BigDecimal.ZERO);
+        if (this.frequency < 1)
+            setFrequency(1);
     }
     
     private void saveConfig() throws IOException
     {
-        loader.save(rootNode);
-    }
-    
-    @Override
-    public boolean decrementCooldown(Player player)
-    {
-        int current = cooldowns.containsKey(player) ? cooldowns.get(player) : getInterval();
-        if (current > getInterval())
-            current = getInterval();
-        cooldowns.put(player, current - 1);
-        return current - 1 <= 0;
+        this.loader.save(this.rootNode);
     }
     
     @Override
@@ -90,53 +79,68 @@ public class PaydayServiceProvider implements PaydayService
         {
             this.joinBonus = joinBonus;
             this.rootNode.getNode("join-bonus").setValue(joinBonus);
-            saveConfig();
+            this.saveConfig();
         }
     }
 
     @Override
-    public void setPaycheck(BigDecimal amount) throws IOException
+    public void setAmount(BigDecimal amount) throws IOException
     {
         if (amount.compareTo(BigDecimal.ZERO) >= 0)
         {
-            this.paycheck = amount;
+            this.amount = amount;
             this.rootNode.getNode("amount").setValue(amount);
-            saveConfig();
+            this.saveConfig();
         }
     }
 
     @Override
-    public void setInterval(int minutes) throws IOException
+    public void setFrequency(int minutes) throws IOException
     {
         if  (minutes >= 1)
         {
-            this.interval = minutes;
+            this.frequency = minutes;
             this.rootNode.getNode("frequency").setValue(minutes);
-            saveConfig();
+            this.saveConfig();
         }
-    }
-    
-    @Override
-    public int getCooldown(Player player)
-    {
-        return cooldowns.containsKey(player) ? cooldowns.get(player) : getInterval();
     }
 
     @Override
     public BigDecimal getJoinBonus()
     {
-        return joinBonus;
+        return this.joinBonus;
     }
 
     @Override
-    public BigDecimal getPaycheck()
+    public BigDecimal getAmount()
     {
-        return paycheck;
+        return this.amount;
     }
 
     @Override
-    public int getInterval()
+    public int getFrequency()
     {
-        return interval;
+        return this.frequency;
+    }
+    
+    @Override
+    public boolean decrementCooldown(Player player)
+    {
+        int current = this.getCooldown(player);
+        if (current > this.getFrequency())
+            current = this.getFrequency();
+        this.cooldowns.put(player, current - 1);
+        return current - 1 <= 0;
+    }
+    
+    @Override
+    public int getCooldown(Player player)
+    {
+        return this.cooldowns.containsKey(player) ? this.cooldowns.get(player) : this.getFrequency();
+    }
+    
+    public void resetCooldown(Player player)
+    {
+        this.cooldowns.put(player, this.getFrequency());
     }
 }

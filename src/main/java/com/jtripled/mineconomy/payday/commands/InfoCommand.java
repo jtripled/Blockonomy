@@ -1,6 +1,6 @@
 package com.jtripled.mineconomy.payday.commands;
 
-import com.jtripled.mineconomy.payday.PaydayService;
+import com.jtripled.sponge.util.TextUtil;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.util.Optional;
@@ -15,6 +15,7 @@ import org.spongepowered.api.service.ProviderRegistration;
 import org.spongepowered.api.service.economy.EconomyService;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
+import com.jtripled.mineconomy.payday.PaydayService;
 
 /**
  *
@@ -31,11 +32,12 @@ public class InfoCommand implements CommandExecutor
     @Override
     public CommandResult execute(CommandSource src, CommandContext args) throws CommandException
     {
-        Optional<ProviderRegistration<PaydayService>> opService = Sponge.getServiceManager().getRegistration(PaydayService.class);
+        Optional<ProviderRegistration<PaydayService>> opPayday = Sponge.getServiceManager().getRegistration(PaydayService.class);
         
         /* Could not find payday service. */
-        if (!opService.isPresent())
+        if (!opPayday.isPresent())
         {
+            src.sendMessage(TextUtil.serviceNotFound("PaydayService"));
             return CommandResult.empty();
         }
         
@@ -44,25 +46,22 @@ public class InfoCommand implements CommandExecutor
         /* Could not find economy service. */
         if (!opEconomy.isPresent())
         {
+            src.sendMessage(TextUtil.serviceNotFound("EconomyService"));
             return CommandResult.empty();
         }
         
-        PaydayService payday = opService.get().getProvider();
+        PaydayService payday = opPayday.get().getProvider();
         EconomyService economy = opEconomy.get().getProvider();
         
         BigDecimal joinBonus = payday.getJoinBonus();
-        BigDecimal paycheck = payday.getPaycheck();
+        BigDecimal paycheck = payday.getAmount();
         
-        DecimalFormat format = new DecimalFormat("#0.00");
         Text topBorder = Text.of("==================== ", TextColors.GREEN, "Payday Info", TextColors.WHITE, " =====================");
-        Text joinBonusMsg = Text.of(TextColors.AQUA, "Join Bonus", TextColors.WHITE, " = ", format.format(joinBonus), " ",
-            (joinBonus.compareTo(BigDecimal.ONE) != 0 ? economy.getDefaultCurrency().getPluralDisplayName().toPlain() : economy.getDefaultCurrency().getDisplayName().toPlain()));
-        Text paycheckMsg = Text.of(TextColors.AQUA, "Paycheck", TextColors.WHITE, " = ", format.format(paycheck), " ",
-            (paycheck.compareTo(BigDecimal.ONE) != 0 ? economy.getDefaultCurrency().getPluralDisplayName().toPlain() : economy.getDefaultCurrency().getDisplayName().toPlain()));
-        Text intervalMsg = Text.of(TextColors.AQUA, "Frequency", TextColors.WHITE, " = ", payday.getInterval(), " minutes");
+        Text freqMsg = Text.of(TextColors.AQUA, "Frequency", TextColors.WHITE, " = ", TextUtil.pluralize(payday.getFrequency(), "minute", "minutes"));
+        Text amountMsg = Text.of(TextColors.AQUA, "Amount", TextColors.WHITE, " = ", TextUtil.pluralize(paycheck, economy.getDefaultCurrency().getDisplayName().toPlain(), economy.getDefaultCurrency().getPluralDisplayName().toPlain(), new DecimalFormat("#0.00")));
+        Text joinBonusMsg = Text.of(TextColors.AQUA, "Join Bonus", TextColors.WHITE, " = ", TextUtil.pluralize(joinBonus, economy.getDefaultCurrency().getDisplayName().toPlain(), economy.getDefaultCurrency().getPluralDisplayName().toPlain(), new DecimalFormat("#0.00")));
         Text bottomBorder = Text.of("=====================================================");
-        
-        src.sendMessages(topBorder, joinBonusMsg, paycheckMsg, intervalMsg, bottomBorder);
+        src.sendMessages(topBorder, freqMsg, amountMsg, joinBonusMsg, bottomBorder);
         
         return CommandResult.success();
     }

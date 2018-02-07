@@ -1,6 +1,7 @@
 package com.jtripled.mineconomy.lottery.commands;
 
 import com.jtripled.mineconomy.lottery.LotteryService;
+import com.jtripled.sponge.util.TextUtil;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.util.Optional;
@@ -31,11 +32,12 @@ public class InfoCommand implements CommandExecutor
     @Override
     public CommandResult execute(CommandSource src, CommandContext args) throws CommandException
     {
-        Optional<ProviderRegistration<LotteryService>> opService = Sponge.getServiceManager().getRegistration(LotteryService.class);
+        Optional<ProviderRegistration<LotteryService>> opLottery = Sponge.getServiceManager().getRegistration(LotteryService.class);
         
         /* Could not find payday service. */
-        if (!opService.isPresent())
+        if (!opLottery.isPresent())
         {
+            src.sendMessage(TextUtil.serviceNotFound("LotteryService"));
             return CommandResult.empty();
         }
         
@@ -44,19 +46,18 @@ public class InfoCommand implements CommandExecutor
         /* Could not find economy service. */
         if (!opEconomy.isPresent())
         {
+            src.sendMessage(TextUtil.serviceNotFound("EconomyService"));
             return CommandResult.empty();
         }
         
-        LotteryService lottery = opService.get().getProvider();
+        LotteryService lottery = opLottery.get().getProvider();
         EconomyService economy = opEconomy.get().getProvider();
         
-        DecimalFormat format = new DecimalFormat("#0.00");
         Text topBorder = Text.of("==================== ", TextColors.GREEN, "Lottery Info", TextColors.WHITE, " =====================");
-        Text intervalMsg = Text.of(TextColors.AQUA, "Frequency", TextColors.WHITE, " = ", lottery.getFrequency(), " minutes");
-        Text durationMsg = Text.of(TextColors.AQUA, "Duration", TextColors.WHITE, " = ", lottery.getDuration(), " minutes");
-        Text chanceMsg = Text.of(TextColors.AQUA, "Chance", TextColors.WHITE, " = ", String.format("%.0f", lottery.getChance() * 100), "%");
-        Text costMsg = Text.of(TextColors.AQUA, "Cost", TextColors.WHITE, " = ", format.format(lottery.getCost()), " ",
-            (lottery.getCost().compareTo(BigDecimal.ONE) != 0 ? economy.getDefaultCurrency().getPluralDisplayName().toPlain() : economy.getDefaultCurrency().getDisplayName().toPlain()));
+        Text intervalMsg = Text.of(TextColors.AQUA, "Frequency", TextColors.WHITE, " = ", TextUtil.pluralize(lottery.getFrequency(), "minute", "minutes"));
+        Text durationMsg = Text.of(TextColors.AQUA, "Duration", TextColors.WHITE, " = ", TextUtil.pluralize(lottery.getDuration(), "minute", "minutes"));
+        Text chanceMsg = Text.of(TextColors.AQUA, "Chance", TextColors.WHITE, " = ", TextUtil.percentage(lottery.getChance()));
+        Text costMsg = Text.of(TextColors.AQUA, "Cost", TextColors.WHITE, " = ", TextUtil.pluralize(lottery.getCost(), economy.getDefaultCurrency().getDisplayName().toPlain(), economy.getDefaultCurrency().getPluralDisplayName().toPlain(), new DecimalFormat("#0.00")));
         Text bottomBorder = Text.of("=====================================================");
         
         src.sendMessages(topBorder, intervalMsg, durationMsg, chanceMsg, costMsg, bottomBorder);

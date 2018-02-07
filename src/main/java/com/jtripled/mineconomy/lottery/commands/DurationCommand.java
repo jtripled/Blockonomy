@@ -2,6 +2,8 @@ package com.jtripled.mineconomy.lottery.commands;
 
 import com.jtripled.mineconomy.Mineconomy;
 import com.jtripled.mineconomy.lottery.LotteryService;
+import com.jtripled.mineconomy.lottery.LotteryText;
+import com.jtripled.sponge.util.TextUtil;
 import java.io.IOException;
 import java.util.Optional;
 import org.spongepowered.api.Sponge;
@@ -14,7 +16,6 @@ import org.spongepowered.api.command.spec.CommandExecutor;
 import org.spongepowered.api.command.spec.CommandSpec;
 import org.spongepowered.api.service.ProviderRegistration;
 import org.spongepowered.api.text.Text;
-import org.spongepowered.api.text.format.TextColors;
 
 /**
  *
@@ -32,33 +33,35 @@ public class DurationCommand implements CommandExecutor
     @Override
     public CommandResult execute(CommandSource src, CommandContext args) throws CommandException
     {
-        Optional<ProviderRegistration<LotteryService>> opService = Sponge.getServiceManager().getRegistration(LotteryService.class);
+        Optional<ProviderRegistration<LotteryService>> opLottery = Sponge.getServiceManager().getRegistration(LotteryService.class);
         
-        /* Could not find payday service. */
-        if (!opService.isPresent())
+        /* Could not find lottery service. */
+        if (!opLottery.isPresent())
         {
+            src.sendMessage(TextUtil.serviceNotFound("LotteryService"));
             return CommandResult.empty();
         }
         
-        LotteryService lottery = opService.get().getProvider();
+        LotteryService lottery = opLottery.get().getProvider();
         
         int minutes = (Integer) args.getOne("minutes").get();
         if (minutes < 1)
         {
+            src.sendMessage(LotteryText.invalidDurationText());
             return CommandResult.empty();
         }
         
         try
         {
+            src.sendMessage(LotteryText.setDurationText(minutes));
             lottery.setDuration(minutes);
-            Text msg = Text.of(TextColors.GREEN, "You've set the lottery duration to ", TextColors.YELLOW, minutes, " minutes", TextColors.GREEN, ".");
-            src.sendMessage(msg);
+            return CommandResult.success();
         }
         catch (IOException ex)
         {
+            src.sendMessage(LotteryText.setDurationErrorText());
             Mineconomy.getLogger().error(null, ex);
+            return CommandResult.empty();
         }
-        
-        return CommandResult.success();
     }
 }

@@ -10,12 +10,12 @@ import org.spongepowered.api.text.Text;
 public class PaydayCommand
 {
     public static final CommandSpec SPEC = CommandSpec.builder()
-        .description(Text.of("Display current paycheck amount, interval, and join bonus."))
+        .description(Text.of("Display current paycheck amount, frequency, and join bonus."))
         .permission("mineconomy.payday.admin")
         .executor(new InfoCommand())
         .child(InfoCommand.SPEC, "info", "i")
-        .child(IntervalCommand.SPEC, "frequency", "freq", "f")
+        .child(FrequencyCommand.SPEC, "frequency", "freq", "f")
         .child(JoinBonusCommand.SPEC, "joinbonus", "join", "j")
-        .child(PaycheckCommand.SPEC, "paycheck", "check", "amount", "p")
+        .child(AmountCommand.SPEC, "amount", "a")
         .build();
 }
