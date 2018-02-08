@@ -2,10 +2,8 @@ package com.jtripled.mineconomy.lottery.commands;
 
 import com.jtripled.mineconomy.Mineconomy;
 import com.jtripled.mineconomy.lottery.service.LotteryService;
-import com.jtripled.mineconomy.lottery.LotteryText;
 import com.jtripled.sponge.util.TextUtil;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.util.Optional;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandException;
@@ -16,20 +14,19 @@ import org.spongepowered.api.command.args.GenericArguments;
 import org.spongepowered.api.command.spec.CommandExecutor;
 import org.spongepowered.api.command.spec.CommandSpec;
 import org.spongepowered.api.service.ProviderRegistration;
-import org.spongepowered.api.service.economy.EconomyService;
 import org.spongepowered.api.text.Text;
 
 /**
  *
  * @author jtripled
  */
-public class LotteryCostCommand implements CommandExecutor
+public class LotteryPrizeDeleteCommand implements CommandExecutor
 {
     public static final CommandSpec SPEC = CommandSpec.builder()
-        .description(Text.of("Set the lottery ticket cost."))
+        .description(Text.of("Delete a prize set."))
         .permission("mineconomy.lottery.admin")
-        .executor(new LotteryCostCommand())
-        .arguments(GenericArguments.doubleNum(Text.of("amount")))
+        .executor(new LotteryPrizeDeleteCommand())
+        .arguments(GenericArguments.string(Text.of("name")))
         .build();
 
     @Override
@@ -45,36 +42,23 @@ public class LotteryCostCommand implements CommandExecutor
             return CommandResult.empty();
         }
         
-        Optional<ProviderRegistration<EconomyService>> opEconomy
-                = Sponge.getServiceManager().getRegistration(EconomyService.class);
+        LotteryService lotterySrv = opLottery.get().getProvider();
         
-        /* Could not find economy service. */
-        if (!opEconomy.isPresent())
+        String name = (String) args.getOne("name").get();
+        
+        if (lotterySrv.getNamedPrize(name) == null)
         {
-            src.sendMessage(TextUtil.serviceNotFound("EconomyService"));
-            return CommandResult.empty();
-        }
-        
-        LotteryService lottery = opLottery.get().getProvider();
-        EconomyService economy = opEconomy.get().getProvider();
-        
-        BigDecimal cost = BigDecimal.valueOf((Double) args.getOne("amount").get());
-        if (cost.compareTo(BigDecimal.ZERO) <= 0)
-        {
-            src.sendMessage(LotteryText.invalidCostText(economy));
             return CommandResult.empty();
         }
         
         try
         {
-            src.sendMessage(LotteryText.setCostText(cost, economy));
-            lottery.setCost(cost);
+            lotterySrv.deletePrize(name);
             return CommandResult.success();
         }
         catch (IOException ex)
         {
-            src.sendMessage(LotteryText.setCostErrorText());
-            Mineconomy.getLogger().error(null, ex);
+            Mineconomy.getLogger().error("Could not delete prize set: " + name + ".", ex);
             return CommandResult.empty();
         }
     }

@@ -3,6 +3,7 @@ package com.jtripled.mineconomy.lottery;
 import com.jtripled.sponge.util.TextUtil;
 import java.math.BigDecimal;
 import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.service.economy.EconomyService;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.action.TextActions;
@@ -68,6 +69,28 @@ public class LotteryText
     public static final Text END_TEXT_2 = Text.of(TextColors.GREEN, "! Congratulations!");
     
     public static final Text REFUND_TEXT = Text.of(TextColors.GREEN, "Your money has been refunded.");
+    
+    public static final Text winnerText(Player player)
+    {
+        return Text.of(TextColors.GREEN, "The lottery has ended, and the winner is ",
+                TextColors.YELLOW, player.getName(), TextColors.GREEN, "! Congratulations!");
+    }
+    
+    public static final Text noWinnerText()
+    {
+        return Text.of(TextColors.RED, "The lottery has ended, but there were not enough participants.");
+    }
+    
+    public static final Text refundText(BigDecimal amount, EconomyService economy)
+    {
+        return Text.of(TextColors.GREEN, "You have been refunded ", TextColors.YELLOW,
+                TextUtil.money(amount, economy), TextColors.GREEN, ".");
+    }
+    
+    public static Text moreInfoText()
+    {
+        return Text.join(INFO_1, INFO_2, INFO_3);
+    }
     
     public static Text buyTicketInsufficientFundsText()
     {
@@ -147,6 +170,11 @@ public class LotteryText
         return Text.of(TextColors.RED, "There was an error setting the lottery cost.");
     }
     
+    public static Text lotteryAlreadyRunningText()
+    {
+        return Text.of(TextColors.RED, "There is already a lottery running.");
+    }
+    
     public static Text noRunningLotteryText()
     {
         return Text.of(TextColors.RED, "There is no lottery currently running.");
@@ -196,10 +224,32 @@ public class LotteryText
                 TextUtil.money(cost, economy));
     }
     
-    public static Text lotteryPrizeText(LotteryPrizeSet prize)
+    public static Text lotteryPrizeText(Lottery lottery, EconomyService service)
     {
         return Text.of(TextColors.GREEN, "Prize: ", TextColors.YELLOW,
-                prize.getText());
+                prizeText(lottery, service));
+    }
+    
+    public static Text prizeText(Lottery lottery, EconomyService service)
+    {
+        Text out = null;
+        if (lottery.getMoney().compareTo(BigDecimal.ZERO) > 0)
+        {
+            out = Text.of(TextUtil.money(lottery.getMoney(), service));
+        }
+        if (!lottery.getItems().isEmpty())
+        {
+            for (ItemStack item : lottery.getItems())
+            {
+                if (out != null)
+                    out = Text.join(out, Text.of(", "), Text.of(item.getQuantity() > 1 ? item.getQuantity() + "x " : "", item.getType().getName()));
+                else
+                    out = Text.of(item.getQuantity() > 1 ? item.getQuantity() + "x " : "", item.getType().getName());
+            }
+        }
+        if (out == null)
+            out = Text.of();
+        return out;
     }
     
     public static Text lotteryCurrentTicketText(int tickets)
@@ -212,5 +262,27 @@ public class LotteryText
     {
         return Text.of(TextColors.GREEN, "Total tickets: ", TextColors.YELLOW,
                 TextUtil.pluralize(tickets, "ticket", "tickets"));
+    }
+    
+    public static Text countdownText(int minutesRemaining)
+    {
+        return Text.of(TextColors.GREEN, "There ", minutesRemaining == 1 ? "is " : "are ",
+            TextColors.YELLOW, minutesRemaining, minutesRemaining == 1 ? " minute " : " minutes ",
+            TextColors.GREEN, "remaining in the lottery. ", moreInfoText());
+    }
+    
+    public static Text beginText()
+    {
+        return Text.of(TextColors.GREEN, "A lottery has just begun! ", moreInfoText());
+    }
+    
+    public static Text endLotteryCmdText()
+    {
+        return Text.of(TextColors.GREEN, "You have ended the current lottery.");
+    }
+    
+    public static Text startLotteryCmdText()
+    {
+        return Text.of(TextColors.GREEN, "You have started a new lottery.");
     }
 }

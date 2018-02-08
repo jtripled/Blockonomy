@@ -1,9 +1,11 @@
 package com.jtripled.mineconomy.lottery.service;
 
-import com.jtripled.mineconomy.lottery.LotteryPrizeSet;
+import com.jtripled.mineconomy.lottery.Lottery;
+import com.jtripled.mineconomy.lottery.LotteryPrize;
 import java.io.IOException;
 import java.math.BigDecimal;
-import org.spongepowered.api.entity.living.player.Player;
+import java.util.List;
+import org.spongepowered.api.item.inventory.ItemStack;
 
 /**
  *
@@ -11,39 +13,29 @@ import org.spongepowered.api.entity.living.player.Player;
  */
 public interface LotteryService
 {
-    public boolean decrementCooldown();
-    
     public boolean isLotteryRunning();
     
-    public int minutesRemaining();
+    public Lottery getLottery();
     
-    public boolean shouldLotteryStart();
+    public void waitLottery(int duration);
     
-    public void startLottery(LotteryPrizeSet prize);
+    public void startLottery(Lottery lottery);
     
     public void endLottery();
-    
-    public int getPlayerTicketCount(Player player);
-    
-    public int getTotalTicketCount();
-    
-    public LotteryPrizeSet getPrize();
-    
-    public boolean buyTickets(Player player, int quantity);
     
     public void setFrequency(int minutes) throws IOException;
     
     public void setDuration(int minutes) throws IOException;
     
-    public void setChance(double chance) throws IOException;
-    
-    public void setCost(BigDecimal cost) throws IOException;
-    
     public int getFrequency();
     
     public int getDuration();
     
-    public double getChance();
+    public void createPrize(String name, int weight, BigDecimal ticketCost, BigDecimal money, List<ItemStack> items) throws IOException;
     
-    public BigDecimal getCost();
+    public void deletePrize(String name) throws IOException;
+    
+    public LotteryPrize getRandomPrize();
+    
+    public LotteryPrize getNamedPrize(String name);
 }

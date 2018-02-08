@@ -22,7 +22,7 @@ public class PaydayModule
     
     public PaydayModule() throws IOException
     {
-        /* Initialize our payday services. */
+        /* Initialize payday service. */
         this.paydayService = new PaydayServiceProvider();
         
         /* Register payday service. */

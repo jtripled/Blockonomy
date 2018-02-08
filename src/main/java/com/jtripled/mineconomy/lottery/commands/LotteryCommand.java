@@ -1,9 +1,9 @@
 package com.jtripled.mineconomy.lottery.commands;
 
+import com.jtripled.mineconomy.lottery.Lottery;
 import com.jtripled.mineconomy.lottery.service.LotteryService;
 import com.jtripled.mineconomy.lottery.LotteryText;
 import com.jtripled.sponge.util.TextUtil;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -32,11 +32,12 @@ public class LotteryCommand implements CommandExecutor
         .permission("mineconomy.lottery")
         .executor(new LotteryCommand())
         .child(LotteryBuyCommand.SPEC, "buy", "b")
-        .child(LotteryChanceCommand.SPEC, "chance")
-        .child(LotteryCostCommand.SPEC, "cost")
         .child(LotteryDurationCommand.SPEC, "duration", "dur", "d")
         .child(LotteryFrequencyCommand.SPEC, "frequency", "frequency", "freq", "f")
         .child(LotteryInfoCommand.SPEC, "info", "i")
+        .child(LotteryPrizeCommand.SPEC, "prize", "p")
+        .child(LotteryEndCommand.SPEC, "end", "e")
+        .child(LotteryStartCommand.SPEC, "start", "s")
         .build();
     
     @Override
@@ -62,23 +63,25 @@ public class LotteryCommand implements CommandExecutor
             return CommandResult.empty();
         }
         
-        LotteryService lottery = opLottery.get().getProvider();
-        EconomyService economy = opEconomy.get().getProvider();
+        LotteryService lotterySrv = opLottery.get().getProvider();
+        EconomyService economySrv = opEconomy.get().getProvider();
         
-        if (!lottery.isLotteryRunning())
+        if (!lotterySrv.isLotteryRunning() || lotterySrv.getLottery() == null)
         {
             src.sendMessage(LotteryText.noRunningLotteryText());
             return CommandResult.success();
         }
         
+        Lottery lottery = lotterySrv.getLottery();
+        
         /* Create pagination contents. */
         List<Text> contents = new ArrayList<>();
-        contents.add(LotteryText.lotteryTimeRemainingText(lottery.minutesRemaining()));
-        contents.add(LotteryText.lotteryTicketCostText(lottery.getCost(), economy));
+        contents.add(LotteryText.lotteryTimeRemainingText(lottery.getMinutesRemaining()));
+        contents.add(LotteryText.lotteryTicketCostText(lottery.getTicketCost(), economySrv));
         contents.add((src instanceof Player)
             ? LotteryText.lotteryCurrentTicketText(lottery.getPlayerTicketCount((Player) src))
             : LotteryText.lotteryTotalTicketText(lottery.getTotalTicketCount()));
-        contents.add(LotteryText.lotteryPrizeText(lottery.getPrize()));
+        contents.add(LotteryText.lotteryPrizeText(lottery, economySrv));
         if (src instanceof Player)
         {
             contents.add(Text.EMPTY);

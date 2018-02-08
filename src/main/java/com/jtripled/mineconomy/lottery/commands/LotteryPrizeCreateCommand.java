@@ -1,9 +1,17 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
 package com.jtripled.mineconomy.lottery.commands;
 
+import com.jtripled.mineconomy.Mineconomy;
 import com.jtripled.mineconomy.lottery.service.LotteryService;
-import com.jtripled.mineconomy.lottery.LotteryText;
 import com.jtripled.sponge.util.TextUtil;
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandException;
@@ -14,6 +22,7 @@ import org.spongepowered.api.command.args.GenericArguments;
 import org.spongepowered.api.command.spec.CommandExecutor;
 import org.spongepowered.api.command.spec.CommandSpec;
 import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.service.ProviderRegistration;
 import org.spongepowered.api.service.economy.EconomyService;
 import org.spongepowered.api.text.Text;
@@ -22,13 +31,16 @@ import org.spongepowered.api.text.Text;
  *
  * @author jtripled
  */
-public class LotteryBuyCommand implements CommandExecutor
+public class LotteryPrizeCreateCommand implements CommandExecutor
 {
     public static final CommandSpec SPEC = CommandSpec.builder()
-        .description(Text.of("Purchase tickets for the current lottery."))
-        .permission("mineconomy.lottery.buy")
-        .executor(new LotteryBuyCommand())
-        .arguments(GenericArguments.optional(GenericArguments.integer(Text.of("quantity"))))
+        .description(Text.of("Set your current inventory as a prize set."))
+        .permission("mineconomy.lottery.admin")
+        .executor(new LotteryPrizeCreateCommand())
+        .arguments(GenericArguments.string(Text.of("name")),
+                GenericArguments.doubleNum(Text.of("cost")),
+                GenericArguments.doubleNum(Text.of("money")),
+                GenericArguments.integer(Text.of("weight")))
         .build();
 
     @Override
@@ -65,22 +77,27 @@ public class LotteryBuyCommand implements CommandExecutor
         LotteryService lotterySrv = opLottery.get().getProvider();
         EconomyService economySrv = opEconomy.get().getProvider();
         
-        if (!lotterySrv.isLotteryRunning() || lotterySrv.getLottery() == null)
+        List<ItemStack> items = new ArrayList<>();
+        Optional<ItemStack> poll = player.getInventory().poll();
+        while (poll.isPresent())
         {
-            src.sendMessage(LotteryText.noRunningLotteryText());
-            return CommandResult.empty();
+            items.add(poll.get());
+            poll = player.getInventory().poll();
         }
         
-        int quantity = args.hasAny("quantity") ? (int) args.getOne("quantity").get() : 1;
-        
-        if (!lotterySrv.getLottery().buyTickets(player, quantity))
+        try
         {
-            src.sendMessage(LotteryText.buyTicketInsufficientFundsText());
+            lotterySrv.createPrize((String) args.getOne("name").get(),
+                    (int) args.getOne("weight").get(),
+                    BigDecimal.valueOf((double) args.getOne("cost").get()),
+                    BigDecimal.valueOf((double) args.getOne("money").get()),
+                    items);
+            return CommandResult.success();
+        }
+        catch (IOException ex)
+        {
+            Mineconomy.getLogger().error("Could not created prize set.", ex);
             return CommandResult.empty();
         }
-        
-        src.sendMessage(LotteryText.buyTicketText(quantity, lotterySrv.getLottery().getTicketCost(), economySrv));
-        
-        return CommandResult.success();
     }
 }

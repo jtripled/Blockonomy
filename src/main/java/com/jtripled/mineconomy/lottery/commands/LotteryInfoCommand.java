@@ -62,8 +62,6 @@ public class LotteryInfoCommand implements CommandExecutor
         List<Text> contents = new ArrayList<>();
         contents.add(LotteryText.infoFrequencyText(lottery.getFrequency()));
         contents.add(LotteryText.infoDurationText(lottery.getDuration()));
-        contents.add(LotteryText.infoChanceText(lottery.getChance()));
-        contents.add(LotteryText.infoCostText(lottery.getCost(), economy));
         
         /* Send contents to command sender. */
         PaginationList.builder()
