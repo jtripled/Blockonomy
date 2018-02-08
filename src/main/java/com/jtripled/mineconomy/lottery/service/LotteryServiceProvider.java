@@ -211,7 +211,6 @@ public final class LotteryServiceProvider implements LotteryService
     {
         ConfigurationNode prizeNode = this.rootNode.getNode("prizes");
         int random = new Random().nextInt(this.rootNode.getNode("total-weight").getInt()) + 1;
-        Mineconomy.getLogger().info(random + " " + prizeNode.getChildrenMap().size());
         for (ConfigurationNode node : prizeNode.getChildrenMap().values())
         {
             random -= node.getNode("weight").getInt();

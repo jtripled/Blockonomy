@@ -6,6 +6,7 @@
 package com.jtripled.mineconomy.lottery.commands;
 
 import com.jtripled.mineconomy.Mineconomy;
+import com.jtripled.mineconomy.lottery.LotteryText;
 import com.jtripled.mineconomy.lottery.service.LotteryService;
 import com.jtripled.sponge.util.TextUtil;
 import java.io.IOException;
@@ -77,6 +78,14 @@ public class LotteryPrizeCreateCommand implements CommandExecutor
         LotteryService lotterySrv = opLottery.get().getProvider();
         EconomyService economySrv = opEconomy.get().getProvider();
         
+        String name = (String) args.getOne("name").get();
+        
+        if (lotterySrv.getNamedPrize(name) != null)
+        {
+            src.sendMessage(LotteryText.prizeAlreadyExists(name));
+            return CommandResult.empty();
+        }
+        
         List<ItemStack> items = new ArrayList<>();
         Optional<ItemStack> poll = player.getInventory().poll();
         while (poll.isPresent())
@@ -87,11 +96,12 @@ public class LotteryPrizeCreateCommand implements CommandExecutor
         
         try
         {
-            lotterySrv.createPrize((String) args.getOne("name").get(),
+            lotterySrv.createPrize(name,
                     (int) args.getOne("weight").get(),
                     BigDecimal.valueOf((double) args.getOne("cost").get()),
                     BigDecimal.valueOf((double) args.getOne("money").get()),
                     items);
+            src.sendMessage(LotteryText.prizeCreated(name));
             return CommandResult.success();
         }
         catch (IOException ex)

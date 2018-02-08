@@ -70,18 +70,42 @@ public class LotteryText
     
     public static final Text REFUND_TEXT = Text.of(TextColors.GREEN, "Your money has been refunded.");
     
-    public static final Text winnerText(Player player)
+    public static Text prizeAlreadyExists(String name)
+    {
+        return Text.of(TextColors.RED, "A prize set named ",
+                TextColors.YELLOW, name, TextColors.RED, " already exists.");
+    }
+    
+    public static Text prizeNotExists(String name)
+    {
+        return Text.of(TextColors.RED, "There is no prize set named ",
+                TextColors.YELLOW, name, TextColors.RED, ".");
+    }
+    
+    public static Text prizeCreated(String name)
+    {
+        return Text.of(TextColors.GREEN, "You have created a prize set named ",
+                TextColors.YELLOW, name, TextColors.GREEN, ".");
+    }
+    
+    public static Text prizeDeleted(String name)
+    {
+        return Text.of(TextColors.GREEN, "You have deleted a prize set named ",
+                TextColors.YELLOW, name, TextColors.GREEN, ".");
+    }
+    
+    public static Text winnerText(Player player)
     {
         return Text.of(TextColors.GREEN, "The lottery has ended, and the winner is ",
                 TextColors.YELLOW, player.getName(), TextColors.GREEN, "! Congratulations!");
     }
     
-    public static final Text noWinnerText()
+    public static Text noWinnerText()
     {
         return Text.of(TextColors.RED, "The lottery has ended, but there were not enough participants.");
     }
     
-    public static final Text refundText(BigDecimal amount, EconomyService economy)
+    public static Text refundText(BigDecimal amount, EconomyService economy)
     {
         return Text.of(TextColors.GREEN, "You have been refunded ", TextColors.YELLOW,
                 TextUtil.money(amount, economy), TextColors.GREEN, ".");

@@ -1,6 +1,7 @@
 package com.jtripled.mineconomy.lottery.commands;
 
 import com.jtripled.mineconomy.Mineconomy;
+import com.jtripled.mineconomy.lottery.LotteryText;
 import com.jtripled.mineconomy.lottery.service.LotteryService;
 import com.jtripled.sponge.util.TextUtil;
 import java.io.IOException;
@@ -48,12 +49,14 @@ public class LotteryPrizeDeleteCommand implements CommandExecutor
         
         if (lotterySrv.getNamedPrize(name) == null)
         {
+            src.sendMessage(LotteryText.prizeNotExists(name));
             return CommandResult.empty();
         }
         
         try
         {
             lotterySrv.deletePrize(name);
+            src.sendMessage(LotteryText.prizeDeleted(name));
             return CommandResult.success();
         }
         catch (IOException ex)
