@@ -1,6 +1,8 @@
-package com.jtripled.mineconomy.payday;
+package com.jtripled.mineconomy.payday.service;
 
 import com.jtripled.mineconomy.Mineconomy;
+import com.jtripled.mineconomy.payday.PaydayText;
+import io.github.nucleuspowered.nucleus.api.service.NucleusAFKService;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.file.Files;
@@ -16,6 +18,7 @@ import org.spongepowered.api.asset.Asset;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.game.GameReloadEvent;
+import org.spongepowered.api.event.service.ChangeServiceProviderEvent;
 
 /**
  *
@@ -31,6 +34,8 @@ public class PaydayServiceProvider implements PaydayService
     private int frequency;
     private final Map<Player, Integer> cooldowns;
     
+    private NucleusAFKService afkService;
+    
     public PaydayServiceProvider() throws IOException
     {
         this.loadConfig();
@@ -43,28 +48,42 @@ public class PaydayServiceProvider implements PaydayService
         this.loadConfig();
     }
     
+    /* Update service providers. */
+    @Listener
+    public void onChangeServiceProvider(ChangeServiceProviderEvent event)
+    {
+        if (event.getService() == NucleusAFKService.class)
+        {
+            afkService = (NucleusAFKService) event.getNewProvider();
+        }
+    }
+    
     private void loadConfig() throws IOException
     {
         Path configPath = Mineconomy.getConfigDirectory().resolve("payday.conf");
         if (this.loader == null)
-            loader = HoconConfigurationLoader.builder().setPath(configPath).build();
+            this.loader = HoconConfigurationLoader.builder().setPath(configPath).build();
         if (Files.notExists(configPath))
         {
             Sponge.getAssetManager().getAsset(Mineconomy.INSTANCE, "payday.conf").get().copyToDirectory(Mineconomy.getConfigDirectory());
         }
-        rootNode = loader.load();
+        this.rootNode = this.loader.load();
         Asset asset = Sponge.getAssetManager().getAsset(Mineconomy.INSTANCE, "payday.conf").get();
-        rootNode.mergeValuesFrom(loader.load());
-        loader.save(rootNode);
-        this.joinBonus = BigDecimal.valueOf(rootNode.getNode("join-bonus").getDouble());
-        this.amount = BigDecimal.valueOf(rootNode.getNode("amount").getDouble());
-        this.frequency = rootNode.getNode("frequency").getInt();
+        this.rootNode.mergeValuesFrom(loader.load());
+        this.loader.save(this.rootNode);
+        
+        /* Load values. */
+        this.joinBonus = BigDecimal.valueOf(this.rootNode.getNode("join-bonus").getDouble());
+        this.amount = BigDecimal.valueOf(this.rootNode.getNode("amount").getDouble());
+        this.frequency = this.rootNode.getNode("frequency").getInt();
+        
+        /* Validate values. */
         if (this.joinBonus.compareTo(BigDecimal.ZERO) < 0)
-            setJoinBonus(BigDecimal.ZERO);
+            this.setJoinBonus(BigDecimal.ZERO);
         if (this.amount.compareTo(BigDecimal.ZERO) < 0)
-            setAmount(BigDecimal.ZERO);
+            this.setAmount(BigDecimal.ZERO);
         if (this.frequency < 1)
-            setFrequency(1);
+            this.setFrequency(1);
     }
     
     private void saveConfig() throws IOException
@@ -73,54 +92,78 @@ public class PaydayServiceProvider implements PaydayService
     }
     
     @Override
-    public void setJoinBonus(BigDecimal joinBonus) throws IOException
+    public void setFrequency(int minutes) throws IOException
     {
-        if (joinBonus.compareTo(BigDecimal.ZERO) >= 0)
+        if  (minutes >= 1)
         {
-            this.joinBonus = joinBonus;
-            this.rootNode.getNode("join-bonus").setValue(joinBonus);
-            this.saveConfig();
+            try
+            {
+                this.rootNode.getNode("frequency").setValue(minutes);
+                this.saveConfig();
+                this.frequency = minutes;
+            }
+            catch (IOException ex)
+            {
+                Sponge.getServer().getConsole().sendMessage(PaydayText.setFrequencyErrorText());
+                throw ex;
+            }
         }
     }
-
+    
     @Override
     public void setAmount(BigDecimal amount) throws IOException
     {
         if (amount.compareTo(BigDecimal.ZERO) >= 0)
         {
-            this.amount = amount;
-            this.rootNode.getNode("amount").setValue(amount);
-            this.saveConfig();
+            try
+            {
+                this.rootNode.getNode("amount").setValue(amount);
+                this.saveConfig();
+                this.amount = amount;
+            }
+            catch (IOException ex)
+            {
+                Sponge.getServer().getConsole().sendMessage(PaydayText.setAmountErrorText());
+                throw ex;
+            }
         }
     }
-
+    
     @Override
-    public void setFrequency(int minutes) throws IOException
+    public void setJoinBonus(BigDecimal joinBonus) throws IOException
     {
-        if  (minutes >= 1)
+        if (joinBonus.compareTo(BigDecimal.ZERO) >= 0)
         {
-            this.frequency = minutes;
-            this.rootNode.getNode("frequency").setValue(minutes);
-            this.saveConfig();
+            try
+            {
+                this.rootNode.getNode("join-bonus").setValue(joinBonus);
+                this.saveConfig();
+                this.joinBonus = joinBonus;
+            }
+            catch (IOException ex)
+            {
+                Sponge.getServer().getConsole().sendMessage(PaydayText.setJoinBonusErrorText());
+                throw ex;
+            }
         }
     }
-
+    
     @Override
-    public BigDecimal getJoinBonus()
+    public int getFrequency()
     {
-        return this.joinBonus;
+        return this.frequency;
     }
-
+    
     @Override
     public BigDecimal getAmount()
     {
         return this.amount;
     }
-
+    
     @Override
-    public int getFrequency()
+    public BigDecimal getJoinBonus()
     {
-        return this.frequency;
+        return this.joinBonus;
     }
     
     @Override
@@ -139,8 +182,15 @@ public class PaydayServiceProvider implements PaydayService
         return this.cooldowns.containsKey(player) ? this.cooldowns.get(player) : this.getFrequency();
     }
     
+    @Override
     public void resetCooldown(Player player)
     {
         this.cooldowns.put(player, this.getFrequency());
+    }
+    
+    @Override
+    public boolean isAFK(Player player)
+    {
+        return this.afkService == null || this.afkService.isAFK(player);
     }
 }

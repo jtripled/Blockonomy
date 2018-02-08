@@ -2,7 +2,7 @@ package com.jtripled.mineconomy.payday;
 
 import com.jtripled.sponge.util.TextUtil;
 import java.math.BigDecimal;
-import java.text.DecimalFormat;
+import org.spongepowered.api.service.economy.EconomyService;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.action.TextActions;
 import org.spongepowered.api.text.format.TextColors;
@@ -13,16 +13,16 @@ import org.spongepowered.api.text.format.TextColors;
  */
 public class PaydayText
 {
-    public static Text paydayText(BigDecimal amount, String singular, String plural)
+    public static Text paydayText(BigDecimal amount, EconomyService economy)
     {
         return Text.of(TextColors.GREEN, "You have earned a paycheck of ", TextColors.YELLOW,
-                TextUtil.pluralize(amount, singular, plural, new DecimalFormat("#0.00")), TextColors.GREEN, ".");
+                TextUtil.money(amount, economy), TextColors.GREEN, ".");
     }
     
-    public static Text joinBonusText(BigDecimal amount, String singular, String plural)
+    public static Text joinBonusText(BigDecimal amount, EconomyService economy)
     {
         return Text.of(TextColors.GREEN, "Welcome to our server! You've been awarded ", TextColors.YELLOW,
-                TextUtil.pluralize(amount, singular, plural, new DecimalFormat("#0.00")), TextColors.GREEN, "!");
+                TextUtil.money(amount, economy), TextColors.GREEN, "!");
     }
     
     public static Text setFrequencyText(int minutes)
@@ -31,18 +31,16 @@ public class PaydayText
                 TextUtil.pluralize(minutes, "minute", "minutes"), TextColors.GREEN, ".");
     }
     
-    public static Text setAmountText(BigDecimal amount, String singular, String plural)
+    public static Text setAmountText(BigDecimal amount, EconomyService economy)
     {
         return Text.of(TextColors.GREEN, "You've set the payday amount to ", TextColors.YELLOW,
-                TextUtil.pluralize(amount, singular, plural, new DecimalFormat("#0.00")),
-                TextColors.GREEN, ".");
+                TextUtil.money(amount, economy), TextColors.GREEN, ".");
     }
     
-    public static Text setJoinBonusText(BigDecimal amount, String singular, String plural)
+    public static Text setJoinBonusText(BigDecimal amount, EconomyService economy)
     {
         return Text.of(TextColors.GREEN, "You've set the payday join bonus to ", TextColors.YELLOW,
-                TextUtil.pluralize(amount, singular, plural, new DecimalFormat("#0.00")),
-                TextColors.GREEN, ".");
+                TextUtil.money(amount, economy), TextColors.GREEN, ".");
     }
     
     public static Text invalidFrequencyText()
@@ -51,16 +49,16 @@ public class PaydayText
                 TextColors.YELLOW, "1 minute", TextColors.RED, ".");
     }
     
-    public static Text invalidAmountText(String plural)
+    public static Text invalidAmountText(EconomyService economy)
     {
         return Text.of(TextColors.RED, "You cannot set payday amount below ",
-                TextColors.YELLOW, "0.00 ", plural, TextColors.RED, ".");
+                TextColors.YELLOW, TextUtil.money(BigDecimal.valueOf(0.00), economy), TextColors.RED, ".");
     }
     
-    public static Text invalidJoinBonusText(String plural)
+    public static Text invalidJoinBonusText(EconomyService economy)
     {
         return Text.of(TextColors.RED, "You cannot set payday join bonus below ",
-                TextColors.YELLOW, "0.00 ", plural, TextColors.RED, ".");
+                TextColors.YELLOW, TextUtil.money(BigDecimal.valueOf(0.00), economy), TextColors.RED, ".");
     }
     
     public static Text setFrequencyErrorText()
@@ -86,19 +84,19 @@ public class PaydayText
                 TextColors.YELLOW, ": ", TextUtil.pluralize(frequency, "minute", "minutes"));
     }
     
-    public static Text infoAmountText(BigDecimal amount, String singular, String plural)
+    public static Text infoAmountText(BigDecimal amount, EconomyService economy)
     {
         return Text.of(Text.builder("Amount").color(TextColors.AQUA)
                 .onClick(TextActions.suggestCommand("/payday amount 20.00"))
                 .onHover(TextActions.showText(Text.of("Click here to modify the amount."))).build(),
-                TextColors.YELLOW, ": ", TextUtil.pluralize(amount, singular, plural, new DecimalFormat("#0.00")));
+                TextColors.YELLOW, ": ", TextUtil.money(amount, economy));
     }
     
-    public static Text infoJoinBonusText(BigDecimal joinBonus, String singular, String plural)
+    public static Text infoJoinBonusText(BigDecimal joinBonus, EconomyService economy)
     {
         return Text.of(Text.builder("Join Bonus").color(TextColors.AQUA)
                 .onClick(TextActions.suggestCommand("/payday joinbonus 200.00"))
                 .onHover(TextActions.showText(Text.of("Click here to modify the join bonus."))).build(),
-                TextColors.YELLOW, ": ", TextUtil.pluralize(joinBonus, singular, plural, new DecimalFormat("#0.00")));
+                TextColors.YELLOW, ": ", TextUtil.money(joinBonus, economy));
     }
 }

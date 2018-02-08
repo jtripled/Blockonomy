@@ -1,7 +1,10 @@
 package com.jtripled.sponge.util;
 
 import java.math.BigDecimal;
+import java.text.DecimalFormat;
 import java.text.Format;
+import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.service.economy.EconomyService;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 
@@ -16,6 +19,11 @@ public class TextUtil
         if (space)
             return Text.of(s1, " ", s2);
         return Text.of(s1, s2);
+    }
+    
+    public static Text money(BigDecimal amount, EconomyService economy)
+    {
+        return pluralize(amount, economy.getDefaultCurrency().getDisplayName().toPlain(), economy.getDefaultCurrency().getPluralDisplayName().toPlain(), new DecimalFormat("#0.00"));
     }
     
     public static Text pluralize(int count, String singular, String plural)
@@ -51,6 +59,11 @@ public class TextUtil
     public static Text percentage(double value)
     {
         return Text.of(String.format("%.0f", value * 100), "%");
+    }
+    
+    public static Text playerAccountNotFound(Player player)
+    {
+        return Text.of(TextColors.RED, "ERROR: Could not find player account: ", player.getName());
     }
     
     public static Text serviceNotFound(String service)

@@ -1,8 +1,6 @@
 package com.jtripled.mineconomy.payday.commands;
 
 import com.jtripled.sponge.util.TextUtil;
-import java.math.BigDecimal;
-import java.text.DecimalFormat;
 import java.util.Optional;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandException;
@@ -14,25 +12,29 @@ import org.spongepowered.api.command.spec.CommandSpec;
 import org.spongepowered.api.service.ProviderRegistration;
 import org.spongepowered.api.service.economy.EconomyService;
 import org.spongepowered.api.text.Text;
-import org.spongepowered.api.text.format.TextColors;
-import com.jtripled.mineconomy.payday.PaydayService;
+import com.jtripled.mineconomy.payday.service.PaydayService;
+import com.jtripled.mineconomy.payday.PaydayText;
+import java.util.ArrayList;
+import java.util.List;
+import org.spongepowered.api.service.pagination.PaginationList;
 
 /**
  *
  * @author jtripled
  */
-public class InfoCommand implements CommandExecutor
+public class PaydayInfoCommand implements CommandExecutor
 {
     public static final CommandSpec SPEC = CommandSpec.builder()
         .description(Text.of("Display current paycheck amount, interval, and join bonus."))
         .permission("mineconomy.payday.admin")
-        .executor(new InfoCommand())
+        .executor(new PaydayInfoCommand())
         .build();
 
     @Override
     public CommandResult execute(CommandSource src, CommandContext args) throws CommandException
     {
-        Optional<ProviderRegistration<PaydayService>> opPayday = Sponge.getServiceManager().getRegistration(PaydayService.class);
+        Optional<ProviderRegistration<PaydayService>> opPayday
+                = Sponge.getServiceManager().getRegistration(PaydayService.class);
         
         /* Could not find payday service. */
         if (!opPayday.isPresent())
@@ -41,7 +43,8 @@ public class InfoCommand implements CommandExecutor
             return CommandResult.empty();
         }
         
-        Optional<ProviderRegistration<EconomyService>> opEconomy = Sponge.getServiceManager().getRegistration(EconomyService.class);
+        Optional<ProviderRegistration<EconomyService>> opEconomy
+                = Sponge.getServiceManager().getRegistration(EconomyService.class);
         
         /* Could not find economy service. */
         if (!opEconomy.isPresent())
@@ -53,15 +56,17 @@ public class InfoCommand implements CommandExecutor
         PaydayService payday = opPayday.get().getProvider();
         EconomyService economy = opEconomy.get().getProvider();
         
-        BigDecimal joinBonus = payday.getJoinBonus();
-        BigDecimal paycheck = payday.getAmount();
+        /* Create pagination contents. */
+        List<Text> contents = new ArrayList<>();
+        contents.add(PaydayText.infoFrequencyText(payday.getFrequency()));
+        contents.add(PaydayText.infoAmountText(payday.getAmount(), economy));
+        contents.add(PaydayText.infoJoinBonusText(payday.getJoinBonus(), economy));
         
-        Text topBorder = Text.of("==================== ", TextColors.GREEN, "Payday Info", TextColors.WHITE, " =====================");
-        Text freqMsg = Text.of(TextColors.AQUA, "Frequency", TextColors.WHITE, " = ", TextUtil.pluralize(payday.getFrequency(), "minute", "minutes"));
-        Text amountMsg = Text.of(TextColors.AQUA, "Amount", TextColors.WHITE, " = ", TextUtil.pluralize(paycheck, economy.getDefaultCurrency().getDisplayName().toPlain(), economy.getDefaultCurrency().getPluralDisplayName().toPlain(), new DecimalFormat("#0.00")));
-        Text joinBonusMsg = Text.of(TextColors.AQUA, "Join Bonus", TextColors.WHITE, " = ", TextUtil.pluralize(joinBonus, economy.getDefaultCurrency().getDisplayName().toPlain(), economy.getDefaultCurrency().getPluralDisplayName().toPlain(), new DecimalFormat("#0.00")));
-        Text bottomBorder = Text.of("=====================================================");
-        src.sendMessages(topBorder, freqMsg, amountMsg, joinBonusMsg, bottomBorder);
+        /* Send contents to command sender. */
+        PaginationList.builder()
+                .title(Text.of("Payday Info"))
+                .contents(contents)
+                .sendTo(src);
         
         return CommandResult.success();
     }

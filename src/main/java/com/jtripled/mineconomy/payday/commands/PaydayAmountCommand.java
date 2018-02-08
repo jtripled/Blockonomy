@@ -17,25 +17,27 @@ import org.spongepowered.api.command.spec.CommandSpec;
 import org.spongepowered.api.service.ProviderRegistration;
 import org.spongepowered.api.service.economy.EconomyService;
 import org.spongepowered.api.text.Text;
-import com.jtripled.mineconomy.payday.PaydayService;
+import com.jtripled.mineconomy.payday.service.PaydayService;
+import org.spongepowered.api.entity.living.player.Player;
 
 /**
  *
  * @author jtripled
  */
-public class JoinBonusCommand implements CommandExecutor
+public class PaydayAmountCommand implements CommandExecutor
 {
     public static final CommandSpec SPEC = CommandSpec.builder()
-        .description(Text.of("Set the payday first-time join bonus."))
+        .description(Text.of("Set the default payday amount."))
         .permission("mineconomy.payday.admin")
-        .executor(new JoinBonusCommand())
+        .executor(new PaydayAmountCommand())
         .arguments(GenericArguments.doubleNum(Text.of("amount")))
         .build();
 
     @Override
     public CommandResult execute(CommandSource src, CommandContext args) throws CommandException
     {
-        Optional<ProviderRegistration<PaydayService>> opPayday = Sponge.getServiceManager().getRegistration(PaydayService.class);
+        Optional<ProviderRegistration<PaydayService>> opPayday
+                = Sponge.getServiceManager().getRegistration(PaydayService.class);
         
         /* Could not find payday service. */
         if (!opPayday.isPresent())
@@ -44,7 +46,8 @@ public class JoinBonusCommand implements CommandExecutor
             return CommandResult.empty();
         }
         
-        Optional<ProviderRegistration<EconomyService>> opEconomy = Sponge.getServiceManager().getRegistration(EconomyService.class);
+        Optional<ProviderRegistration<EconomyService>> opEconomy
+                = Sponge.getServiceManager().getRegistration(EconomyService.class);
         
         /* Could not find economy service. */
         if (!opEconomy.isPresent())
@@ -56,22 +59,23 @@ public class JoinBonusCommand implements CommandExecutor
         PaydayService payday = opPayday.get().getProvider();
         EconomyService economy = opEconomy.get().getProvider();
         
-        BigDecimal bonus = BigDecimal.valueOf((Double) args.getOne("amount").get());
-        if (bonus.compareTo(BigDecimal.ZERO) < 0)
+        BigDecimal amount = BigDecimal.valueOf((Double) args.getOne("amount").get());
+        if (amount.compareTo(BigDecimal.ZERO) < 0)
         {
-            src.sendMessage(PaydayText.invalidJoinBonusText(economy.getDefaultCurrency().getPluralDisplayName().toPlain()));
+            src.sendMessage(PaydayText.invalidAmountText(economy));
             return CommandResult.empty();
         }
         
         try
         {
-            payday.setJoinBonus(bonus);
-            src.sendMessage(PaydayText.setJoinBonusText(bonus, economy.getDefaultCurrency().getDisplayName().toPlain(), economy.getDefaultCurrency().getPluralDisplayName().toPlain()));
+            payday.setAmount(amount);
+            src.sendMessage(PaydayText.setAmountText(amount, economy));
             return CommandResult.success();
         }
         catch (IOException ex)
         {
-            src.sendMessage(PaydayText.setJoinBonusErrorText());
+            if (src instanceof Player)
+                src.sendMessage(PaydayText.setAmountErrorText());
             Mineconomy.getLogger().error(null, ex);
             return CommandResult.empty();
         }

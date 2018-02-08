@@ -1,4 +1,4 @@
-package com.jtripled.mineconomy.payday;
+package com.jtripled.mineconomy.payday.service;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -27,4 +27,6 @@ public interface PaydayService
     public int getCooldown(Player player);
     
     public void resetCooldown(Player player);
+    
+    public boolean isAFK(Player player);
 }
