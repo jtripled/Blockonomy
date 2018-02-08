@@ -62,4 +62,9 @@ public class TextUtil
     {
         return Text.of(TextColors.RED, "This command can only be send by players.");
     }
+    
+    public static Text bottomBorder()
+    {
+        return Text.of("=====================================================");
+    }
 }

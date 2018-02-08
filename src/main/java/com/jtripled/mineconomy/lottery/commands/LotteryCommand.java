@@ -71,7 +71,7 @@ public class LotteryCommand implements CommandExecutor
             Player player = (Player) src;
             Text topBorder = Text.of("====================== ", TextColors.GREEN, "Lottery", TextColors.WHITE, " =======================");
             Text timeMsg = Text.of(TextColors.GREEN, "Time remaining: ", TextColors.YELLOW, TextUtil.pluralize(lottery.minutesRemaining(), "minute", "minutes"));
-            Text costMsg = Text.of(TextColors.GREEN, "Ticket cost: ", TextUtil.pluralize(lottery.getCost(), economy.getDefaultCurrency().getDisplayName().toPlain(), economy.getDefaultCurrency().getPluralDisplayName().toPlain(), new DecimalFormat("#0.00")));
+            Text costMsg = Text.of(TextColors.GREEN, "Ticket cost: ", TextColors.YELLOW, TextUtil.pluralize(lottery.getCost(), economy.getDefaultCurrency().getDisplayName().toPlain(), economy.getDefaultCurrency().getPluralDisplayName().toPlain(), new DecimalFormat("#0.00")));
             Text currentMsg = Text.of(TextColors.GREEN, "Current tickets: ", TextColors.YELLOW, lottery.getPlayerTicketCount(player));
             Text prizeMsg = Text.of(TextColors.GREEN, "Prize: ", TextColors.YELLOW, lottery.getPrize().getText());
             Text bottomBorder = Text.of("=====================================================");
@@ -81,7 +81,7 @@ public class LotteryCommand implements CommandExecutor
         {
             Text topBorder = Text.of("====================== ", TextColors.GREEN, "Lottery", TextColors.WHITE, " =======================");
             Text timeMsg = Text.of(TextColors.GREEN, "Time remaining: ", TextColors.YELLOW, TextUtil.pluralize(lottery.minutesRemaining(), "minute", "minutes"));
-            Text costMsg = Text.of(TextColors.GREEN, "Ticket cost: ", TextUtil.pluralize(lottery.getCost(), economy.getDefaultCurrency().getDisplayName().toPlain(), economy.getDefaultCurrency().getPluralDisplayName().toPlain(), new DecimalFormat("#0.00")));
+            Text costMsg = Text.of(TextColors.GREEN, "Ticket cost: ", TextColors.YELLOW, TextUtil.pluralize(lottery.getCost(), economy.getDefaultCurrency().getDisplayName().toPlain(), economy.getDefaultCurrency().getPluralDisplayName().toPlain(), new DecimalFormat("#0.00")));
             Text currentMsg = Text.of(TextColors.GREEN, "Total tickets: ", TextColors.YELLOW, lottery.getTotalTicketCount());
             Text prizeMsg = Text.of(TextColors.GREEN, "Prize: ", TextColors.YELLOW, lottery.getPrize().getText());
             Text bottomBorder = Text.of("=====================================================");

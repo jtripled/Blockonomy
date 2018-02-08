@@ -1,8 +1,8 @@
 package com.jtripled.mineconomy.lottery.commands;
 
 import com.jtripled.mineconomy.lottery.LotteryService;
+import com.jtripled.mineconomy.lottery.LotteryText;
 import com.jtripled.sponge.util.TextUtil;
-import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.util.Optional;
 import org.spongepowered.api.Sponge;
@@ -53,14 +53,12 @@ public class InfoCommand implements CommandExecutor
         LotteryService lottery = opLottery.get().getProvider();
         EconomyService economy = opEconomy.get().getProvider();
         
-        Text topBorder = Text.of("==================== ", TextColors.GREEN, "Lottery Info", TextColors.WHITE, " =====================");
-        Text intervalMsg = Text.of(TextColors.AQUA, "Frequency", TextColors.WHITE, " = ", TextUtil.pluralize(lottery.getFrequency(), "minute", "minutes"));
-        Text durationMsg = Text.of(TextColors.AQUA, "Duration", TextColors.WHITE, " = ", TextUtil.pluralize(lottery.getDuration(), "minute", "minutes"));
-        Text chanceMsg = Text.of(TextColors.AQUA, "Chance", TextColors.WHITE, " = ", TextUtil.percentage(lottery.getChance()));
-        Text costMsg = Text.of(TextColors.AQUA, "Cost", TextColors.WHITE, " = ", TextUtil.pluralize(lottery.getCost(), economy.getDefaultCurrency().getDisplayName().toPlain(), economy.getDefaultCurrency().getPluralDisplayName().toPlain(), new DecimalFormat("#0.00")));
-        Text bottomBorder = Text.of("=====================================================");
-        
-        src.sendMessages(topBorder, intervalMsg, durationMsg, chanceMsg, costMsg, bottomBorder);
+        src.sendMessages(Text.of("==================== ", TextColors.GREEN, "Lottery Info", TextColors.WHITE, " ====================="),
+                LotteryText.infoFrequencyText(lottery.getFrequency()),
+                LotteryText.infoDurationText(lottery.getDuration()),
+                LotteryText.infoChanceText(lottery.getChance()),
+                LotteryText.infoCostText(lottery.getCost(), economy.getDefaultCurrency().getDisplayName().toPlain(), economy.getDefaultCurrency().getPluralDisplayName().toPlain()),
+                TextUtil.bottomBorder());
         
         return CommandResult.success();
     }

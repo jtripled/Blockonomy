@@ -4,6 +4,7 @@ import com.jtripled.sponge.util.TextUtil;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.action.TextActions;
 import org.spongepowered.api.text.format.TextColors;
 
 /**
@@ -75,5 +76,29 @@ public class PaydayText
     public static Text setJoinBonusErrorText()
     {
         return Text.of(TextColors.RED, "There was an error setting the payday join bonus.");
+    }
+    
+    public static Text infoFrequencyText(int frequency)
+    {
+        return Text.of(Text.builder("Frequency").color(TextColors.AQUA)
+                .onClick(TextActions.suggestCommand("/payday frequency 30"))
+                .onHover(TextActions.showText(Text.of("Click here to modify the frequency."))).build(),
+                TextColors.YELLOW, ": ", TextUtil.pluralize(frequency, "minute", "minutes"));
+    }
+    
+    public static Text infoAmountText(BigDecimal amount, String singular, String plural)
+    {
+        return Text.of(Text.builder("Amount").color(TextColors.AQUA)
+                .onClick(TextActions.suggestCommand("/payday amount 20.00"))
+                .onHover(TextActions.showText(Text.of("Click here to modify the amount."))).build(),
+                TextColors.YELLOW, ": ", TextUtil.pluralize(amount, singular, plural, new DecimalFormat("#0.00")));
+    }
+    
+    public static Text infoJoinBonusText(BigDecimal joinBonus, String singular, String plural)
+    {
+        return Text.of(Text.builder("Join Bonus").color(TextColors.AQUA)
+                .onClick(TextActions.suggestCommand("/payday joinbonus 200.00"))
+                .onHover(TextActions.showText(Text.of("Click here to modify the join bonus."))).build(),
+                TextColors.YELLOW, ": ", TextUtil.pluralize(joinBonus, singular, plural, new DecimalFormat("#0.00")));
     }
 }

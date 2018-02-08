@@ -4,8 +4,11 @@ import com.jtripled.sponge.util.TextUtil;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.action.ClickAction;
+import org.spongepowered.api.text.action.HoverAction;
 import org.spongepowered.api.text.action.TextActions;
 import org.spongepowered.api.text.format.TextColors;
+import org.spongepowered.api.text.format.TextStyles;
 
 /**
  *
@@ -48,7 +51,7 @@ public class LotteryText
     
     private static final Text INFO_1 = Text.builder("Click ").color(TextColors.GREEN).build();
     
-    private static final Text INFO_2 = Text.builder("here").color(TextColors.YELLOW)
+    private static final Text INFO_2 = Text.builder("here").color(TextColors.AQUA).style(TextStyles.UNDERLINE)
                         .onClick(TextActions.runCommand("/lottery"))
                         .onHover(TextActions.showText(Text.of("Click here for more info on the lottery.")))
                         .build();
@@ -65,7 +68,7 @@ public class LotteryText
     
     public static final Text END_TEXT_2 = Text.of(TextColors.GREEN, "! Congratulations!");
     
-    public static final Text REFUND_TEXT = Text.of(TextColors.GREEN, "You're money has been refunded.");
+    public static final Text REFUND_TEXT = Text.of(TextColors.GREEN, "Your money has been refunded.");
     
     public static Text buyTicketInsufficientFundsText()
     {
@@ -75,8 +78,7 @@ public class LotteryText
     public static Text buyTicketText(int count, BigDecimal cost, String singular, String plural)
     {
         return Text.of(TextColors.GREEN, "You've purchased ", TextColors.YELLOW,
-                count, TextUtil.pluralize(count, "ticket", "tickets"),
-                TextColors.GREEN, "for ", TextColors.YELLOW,
+                TextUtil.pluralize(count, "ticket", "tickets"), TextColors.GREEN, " for ", TextColors.YELLOW,
                 TextUtil.pluralize(cost.multiply(BigDecimal.valueOf(count)), singular, plural, new DecimalFormat("#0.00")),
                 TextColors.GREEN, ".");
     }
@@ -149,5 +151,37 @@ public class LotteryText
     public static Text noRunningLotteryText()
     {
         return Text.of(TextColors.RED, "There is no lottery currently running.");
+    }
+    
+    public static Text infoFrequencyText(int frequency)
+    {
+        return Text.of(Text.builder("Frequency").color(TextColors.AQUA)
+                .onClick(TextActions.suggestCommand("/lottery frequency 30"))
+                .onHover(TextActions.showText(Text.of("Click here to modify the frequency."))).build(),
+                TextColors.YELLOW, ": ", TextUtil.pluralize(frequency, "minute", "minutes"));
+    }
+    
+    public static Text infoDurationText(int duration)
+    {
+        return Text.of(Text.builder("Duration").color(TextColors.AQUA)
+                .onClick(TextActions.suggestCommand("/lottery duration 5"))
+                .onHover(TextActions.showText(Text.of("Click here to modify the duration."))).build(),
+                TextColors.YELLOW, ": ", TextUtil.pluralize(duration, "minute", "minutes"));
+    }
+    
+    public static Text infoChanceText(double chance)
+    {
+        return Text.of(Text.builder("Chance").color(TextColors.AQUA)
+                .onClick(TextActions.suggestCommand("/lottery chance 1.00"))
+                .onHover(TextActions.showText(Text.of("Click here to modify the chance."))).build(),
+                TextColors.YELLOW, ": ", TextUtil.percentage(chance));
+    }
+    
+    public static Text infoCostText(BigDecimal cost, String singular, String plural)
+    {
+        return Text.of(Text.builder("Cost").color(TextColors.AQUA)
+                .onClick(TextActions.suggestCommand("/lottery cost 20.00"))
+                .onHover(TextActions.showText(Text.of("Click here to modify the cost."))).build(),
+                TextColors.YELLOW, ": ", TextUtil.pluralize(cost, singular, plural, new DecimalFormat("#0.00")));
     }
 }
