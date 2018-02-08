@@ -1,7 +1,7 @@
 package com.jtripled.mineconomy.lottery.commands;
 
 import com.jtripled.mineconomy.Mineconomy;
-import com.jtripled.mineconomy.lottery.LotteryService;
+import com.jtripled.mineconomy.lottery.service.LotteryService;
 import com.jtripled.mineconomy.lottery.LotteryText;
 import com.jtripled.sponge.util.TextUtil;
 import java.io.IOException;
@@ -21,19 +21,20 @@ import org.spongepowered.api.text.Text;
  *
  * @author jtripled
  */
-public class DurationCommand implements CommandExecutor
+public class LotteryChanceCommand implements CommandExecutor
 {
     public static final CommandSpec SPEC = CommandSpec.builder()
-        .description(Text.of("Set the lottery duration."))
+        .description(Text.of("Set the lottery chance."))
         .permission("mineconomy.admin")
-        .executor(new DurationCommand())
-        .arguments(GenericArguments.integer(Text.of("minutes")))
+        .executor(new LotteryChanceCommand())
+        .arguments(GenericArguments.doubleNum(Text.of("chance")))
         .build();
 
     @Override
     public CommandResult execute(CommandSource src, CommandContext args) throws CommandException
     {
-        Optional<ProviderRegistration<LotteryService>> opLottery = Sponge.getServiceManager().getRegistration(LotteryService.class);
+        Optional<ProviderRegistration<LotteryService>> opLottery
+                = Sponge.getServiceManager().getRegistration(LotteryService.class);
         
         /* Could not find lottery service. */
         if (!opLottery.isPresent())
@@ -44,22 +45,22 @@ public class DurationCommand implements CommandExecutor
         
         LotteryService lottery = opLottery.get().getProvider();
         
-        int minutes = (Integer) args.getOne("minutes").get();
-        if (minutes < 1)
+        double chance = (Double) args.getOne("chance").get();
+        if (chance <= 0.00d || chance > 1.00d)
         {
-            src.sendMessage(LotteryText.invalidDurationText());
+            src.sendMessage(LotteryText.invalidChanceText());
             return CommandResult.empty();
         }
         
         try
         {
-            src.sendMessage(LotteryText.setDurationText(minutes));
-            lottery.setDuration(minutes);
+            src.sendMessage(LotteryText.setChanceText(chance));
+            lottery.setChance(chance);
             return CommandResult.success();
         }
         catch (IOException ex)
         {
-            src.sendMessage(LotteryText.setDurationErrorText());
+            src.sendMessage(LotteryText.setChanceErrorText());
             Mineconomy.getLogger().error(null, ex);
             return CommandResult.empty();
         }

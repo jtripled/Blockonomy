@@ -1,7 +1,7 @@
 package com.jtripled.mineconomy.lottery.commands;
 
 import com.jtripled.mineconomy.Mineconomy;
-import com.jtripled.mineconomy.lottery.LotteryService;
+import com.jtripled.mineconomy.lottery.service.LotteryService;
 import com.jtripled.mineconomy.lottery.LotteryText;
 import com.jtripled.sponge.util.TextUtil;
 import java.io.IOException;
@@ -23,19 +23,20 @@ import org.spongepowered.api.text.Text;
  *
  * @author jtripled
  */
-public class CostCommand implements CommandExecutor
+public class LotteryCostCommand implements CommandExecutor
 {
     public static final CommandSpec SPEC = CommandSpec.builder()
         .description(Text.of("Set the lottery ticket cost."))
         .permission("mineconomy.lottery.admin")
-        .executor(new CostCommand())
+        .executor(new LotteryCostCommand())
         .arguments(GenericArguments.doubleNum(Text.of("amount")))
         .build();
 
     @Override
     public CommandResult execute(CommandSource src, CommandContext args) throws CommandException
     {
-        Optional<ProviderRegistration<LotteryService>> opLottery = Sponge.getServiceManager().getRegistration(LotteryService.class);
+        Optional<ProviderRegistration<LotteryService>> opLottery
+                = Sponge.getServiceManager().getRegistration(LotteryService.class);
         
         /* Could not find lottery service. */
         if (!opLottery.isPresent())
@@ -44,7 +45,8 @@ public class CostCommand implements CommandExecutor
             return CommandResult.empty();
         }
         
-        Optional<ProviderRegistration<EconomyService>> opEconomy = Sponge.getServiceManager().getRegistration(EconomyService.class);
+        Optional<ProviderRegistration<EconomyService>> opEconomy
+                = Sponge.getServiceManager().getRegistration(EconomyService.class);
         
         /* Could not find economy service. */
         if (!opEconomy.isPresent())
@@ -59,13 +61,13 @@ public class CostCommand implements CommandExecutor
         BigDecimal cost = BigDecimal.valueOf((Double) args.getOne("amount").get());
         if (cost.compareTo(BigDecimal.ZERO) <= 0)
         {
-            src.sendMessage(LotteryText.invalidCostText(economy.getDefaultCurrency().getPluralDisplayName().toPlain()));
+            src.sendMessage(LotteryText.invalidCostText(economy));
             return CommandResult.empty();
         }
         
         try
         {
-            src.sendMessage(LotteryText.setCostText(cost, economy.getDefaultCurrency().getDisplayName().toPlain(), economy.getDefaultCurrency().getPluralDisplayName().toPlain()));
+            src.sendMessage(LotteryText.setCostText(cost, economy));
             lottery.setCost(cost);
             return CommandResult.success();
         }

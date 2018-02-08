@@ -1,5 +1,7 @@
 package com.jtripled.mineconomy.lottery;
 
+import com.jtripled.mineconomy.lottery.service.LotteryService;
+import com.jtripled.mineconomy.lottery.service.LotteryServiceProvider;
 import com.jtripled.mineconomy.Mineconomy;
 import com.jtripled.mineconomy.lottery.commands.LotteryCommand;
 import java.io.IOException;

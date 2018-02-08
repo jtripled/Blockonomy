@@ -2,10 +2,9 @@ package com.jtripled.mineconomy.lottery;
 
 import com.jtripled.sponge.util.TextUtil;
 import java.math.BigDecimal;
-import java.text.DecimalFormat;
+import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.service.economy.EconomyService;
 import org.spongepowered.api.text.Text;
-import org.spongepowered.api.text.action.ClickAction;
-import org.spongepowered.api.text.action.HoverAction;
 import org.spongepowered.api.text.action.TextActions;
 import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.text.format.TextStyles;
@@ -75,11 +74,11 @@ public class LotteryText
         return Text.of(TextColors.RED, "You cannot afford that many tickets.");
     }
     
-    public static Text buyTicketText(int count, BigDecimal cost, String singular, String plural)
+    public static Text buyTicketText(int count, BigDecimal cost, EconomyService economy)
     {
         return Text.of(TextColors.GREEN, "You've purchased ", TextColors.YELLOW,
                 TextUtil.pluralize(count, "ticket", "tickets"), TextColors.GREEN, " for ", TextColors.YELLOW,
-                TextUtil.pluralize(cost.multiply(BigDecimal.valueOf(count)), singular, plural, new DecimalFormat("#0.00")),
+                TextUtil.money(cost.multiply(BigDecimal.valueOf(count)), economy),
                 TextColors.GREEN, ".");
     }
     
@@ -98,9 +97,9 @@ public class LotteryText
         return Text.of(TextColors.GREEN, "You've set the lottery duration to ", TextColors.YELLOW, TextUtil.pluralize(minutes, "minute", "minutes"), TextColors.GREEN, ".");
     }
     
-    public static Text setCostText(BigDecimal minutes, String singular, String plural)
+    public static Text setCostText(BigDecimal minutes, EconomyService economy)
     {
-        return Text.of(TextColors.GREEN, "You've set the lottery cost to ", TextColors.YELLOW, TextUtil.pluralize(minutes, singular, plural), TextColors.GREEN, ".");
+        return Text.of(TextColors.GREEN, "You've set the lottery cost to ", TextColors.YELLOW, TextUtil.money(minutes, economy), TextColors.GREEN, ".");
     }
     
     public static Text invalidChanceText()
@@ -122,10 +121,10 @@ public class LotteryText
                 TextColors.YELLOW, "1 minute", TextColors.RED, ".");
     }
     
-    public static Text invalidCostText(String plural)
+    public static Text invalidCostText(EconomyService economy)
     {
         return Text.of(TextColors.RED, "You cannot set lottery cost below ",
-                TextColors.YELLOW, "0.00 ", plural, TextColors.RED, ".");
+                TextColors.YELLOW, TextUtil.money(BigDecimal.valueOf(0.00d), economy), TextColors.RED, ".");
     }
     
     public static Text setChanceErrorText()
@@ -155,33 +154,63 @@ public class LotteryText
     
     public static Text infoFrequencyText(int frequency)
     {
-        return Text.of(Text.builder("Frequency").color(TextColors.AQUA)
+        return Text.of(Text.builder("Frequency: ").color(TextColors.AQUA)
                 .onClick(TextActions.suggestCommand("/lottery frequency 30"))
                 .onHover(TextActions.showText(Text.of("Click here to modify the frequency."))).build(),
-                TextColors.YELLOW, ": ", TextUtil.pluralize(frequency, "minute", "minutes"));
+                TextColors.YELLOW, TextUtil.pluralize(frequency, "minute", "minutes"));
     }
     
     public static Text infoDurationText(int duration)
     {
-        return Text.of(Text.builder("Duration").color(TextColors.AQUA)
+        return Text.of(Text.builder("Duration: ").color(TextColors.AQUA)
                 .onClick(TextActions.suggestCommand("/lottery duration 5"))
                 .onHover(TextActions.showText(Text.of("Click here to modify the duration."))).build(),
-                TextColors.YELLOW, ": ", TextUtil.pluralize(duration, "minute", "minutes"));
+                TextColors.YELLOW, TextUtil.pluralize(duration, "minute", "minutes"));
     }
     
     public static Text infoChanceText(double chance)
     {
-        return Text.of(Text.builder("Chance").color(TextColors.AQUA)
+        return Text.of(Text.builder("Chance: ").color(TextColors.AQUA)
                 .onClick(TextActions.suggestCommand("/lottery chance 1.00"))
                 .onHover(TextActions.showText(Text.of("Click here to modify the chance."))).build(),
-                TextColors.YELLOW, ": ", TextUtil.percentage(chance));
+                TextColors.YELLOW, TextUtil.percentage(chance));
     }
     
-    public static Text infoCostText(BigDecimal cost, String singular, String plural)
+    public static Text infoCostText(BigDecimal cost, EconomyService economy)
     {
-        return Text.of(Text.builder("Cost").color(TextColors.AQUA)
+        return Text.of(Text.builder("Cost: ").color(TextColors.AQUA)
                 .onClick(TextActions.suggestCommand("/lottery cost 20.00"))
                 .onHover(TextActions.showText(Text.of("Click here to modify the cost."))).build(),
-                TextColors.YELLOW, ": ", TextUtil.pluralize(cost, singular, plural, new DecimalFormat("#0.00")));
+                TextColors.YELLOW, TextUtil.money(cost, economy));
+    }
+    
+    public static Text lotteryTimeRemainingText(int minutes)
+    {
+        return Text.of(TextColors.GREEN, "Time remaining: ", TextColors.YELLOW,
+                TextUtil.pluralize(minutes, "minute", "minutes"));
+    }
+    
+    public static Text lotteryTicketCostText(BigDecimal cost, EconomyService economy)
+    {
+        return Text.of(TextColors.GREEN, "Ticket cost: ", TextColors.YELLOW,
+                TextUtil.money(cost, economy));
+    }
+    
+    public static Text lotteryPrizeText(LotteryPrizeSet prize)
+    {
+        return Text.of(TextColors.GREEN, "Prize: ", TextColors.YELLOW,
+                prize.getText());
+    }
+    
+    public static Text lotteryCurrentTicketText(int tickets)
+    {
+        return Text.of(TextColors.GREEN, "Current tickets: ", TextColors.YELLOW,
+                TextUtil.pluralize(tickets, "ticket", "tickets"));
+    }
+    
+    public static Text lotteryTotalTicketText(int tickets)
+    {
+        return Text.of(TextColors.GREEN, "Total tickets: ", TextColors.YELLOW,
+                TextUtil.pluralize(tickets, "ticket", "tickets"));
     }
 }

@@ -1,6 +1,8 @@
-package com.jtripled.mineconomy.lottery;
+package com.jtripled.mineconomy.lottery.service;
 
 import com.jtripled.mineconomy.Mineconomy;
+import com.jtripled.mineconomy.lottery.LotteryPrizeSet;
+import com.jtripled.mineconomy.lottery.LotteryText;
 import io.github.nucleuspowered.nucleus.api.service.NucleusAFKService;
 import java.io.IOException;
 import java.math.BigDecimal;

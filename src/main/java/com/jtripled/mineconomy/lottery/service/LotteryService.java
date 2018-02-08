@@ -1,5 +1,6 @@
-package com.jtripled.mineconomy.lottery;
+package com.jtripled.mineconomy.lottery.service;
 
+import com.jtripled.mineconomy.lottery.LotteryPrizeSet;
 import java.io.IOException;
 import java.math.BigDecimal;
 import org.spongepowered.api.entity.living.player.Player;

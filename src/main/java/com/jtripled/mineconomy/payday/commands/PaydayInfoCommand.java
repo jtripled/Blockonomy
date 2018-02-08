@@ -17,6 +17,7 @@ import com.jtripled.mineconomy.payday.PaydayText;
 import java.util.ArrayList;
 import java.util.List;
 import org.spongepowered.api.service.pagination.PaginationList;
+import org.spongepowered.api.text.format.TextColors;
 
 /**
  *
@@ -64,7 +65,8 @@ public class PaydayInfoCommand implements CommandExecutor
         
         /* Send contents to command sender. */
         PaginationList.builder()
-                .title(Text.of("Payday Info"))
+                .title(Text.of(TextColors.GREEN, "Payday Info"))
+                .padding(Text.of(TextColors.GREEN, "="))
                 .contents(contents)
                 .sendTo(src);
         

@@ -78,25 +78,25 @@ public class PaydayText
     
     public static Text infoFrequencyText(int frequency)
     {
-        return Text.of(Text.builder("Frequency").color(TextColors.AQUA)
+        return Text.of(Text.builder("Frequency: ").color(TextColors.AQUA)
                 .onClick(TextActions.suggestCommand("/payday frequency 30"))
                 .onHover(TextActions.showText(Text.of("Click here to modify the frequency."))).build(),
-                TextColors.YELLOW, ": ", TextUtil.pluralize(frequency, "minute", "minutes"));
+                TextColors.YELLOW, TextUtil.pluralize(frequency, "minute", "minutes"));
     }
     
     public static Text infoAmountText(BigDecimal amount, EconomyService economy)
     {
-        return Text.of(Text.builder("Amount").color(TextColors.AQUA)
+        return Text.of(Text.builder("Amount: ").color(TextColors.AQUA)
                 .onClick(TextActions.suggestCommand("/payday amount 20.00"))
                 .onHover(TextActions.showText(Text.of("Click here to modify the amount."))).build(),
-                TextColors.YELLOW, ": ", TextUtil.money(amount, economy));
+                TextColors.YELLOW, TextUtil.money(amount, economy));
     }
     
     public static Text infoJoinBonusText(BigDecimal joinBonus, EconomyService economy)
     {
-        return Text.of(Text.builder("Join Bonus").color(TextColors.AQUA)
+        return Text.of(Text.builder("Join Bonus: ").color(TextColors.AQUA)
                 .onClick(TextActions.suggestCommand("/payday joinbonus 200.00"))
                 .onHover(TextActions.showText(Text.of("Click here to modify the join bonus."))).build(),
-                TextColors.YELLOW, ": ", TextUtil.money(joinBonus, economy));
+                TextColors.YELLOW, TextUtil.money(joinBonus, economy));
     }
 }
