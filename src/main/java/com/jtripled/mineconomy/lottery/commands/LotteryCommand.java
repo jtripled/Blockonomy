@@ -85,7 +85,7 @@ public class LotteryCommand implements CommandExecutor
         if (src instanceof Player)
         {
             contents.add(Text.EMPTY);
-            contents.add(LotteryText.BUY_TEXT);
+            contents.add(LotteryText.buyText(lottery.getTicketCost(), economySrv));
         }
         
         /* Send contents to command sender. */

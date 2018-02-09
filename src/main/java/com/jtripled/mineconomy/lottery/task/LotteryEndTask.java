@@ -18,6 +18,7 @@ import org.spongepowered.api.service.ProviderRegistration;
 import org.spongepowered.api.service.economy.EconomyService;
 import org.spongepowered.api.service.economy.account.UniqueAccount;
 import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.format.TextColors;
 
 /**
  *
@@ -68,6 +69,9 @@ public class LotteryEndTask implements Runnable
             Sponge.getServer().getOnlinePlayers().forEach((Player player) -> {
                 player.sendMessage(msg);
             });
+            winner.sendMessage(Text.of(TextColors.GREEN, "You've won ",
+                    TextColors.YELLOW, LotteryText.prizeText(this.lottery, economySrv),
+                    TextColors.GREEN, "!"));
             this.award(winner, this.lottery.getTicketCost().multiply(BigDecimal.valueOf(this.lottery.getTotalTicketCount())));
         }
         else
