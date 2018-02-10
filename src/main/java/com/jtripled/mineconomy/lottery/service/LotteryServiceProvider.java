@@ -41,6 +41,8 @@ public final class LotteryServiceProvider implements LotteryService
     private int frequency;
     private int duration;
     
+    private int weight;
+    
     public LotteryServiceProvider() throws IOException
     {
         loadConfig();
@@ -77,12 +79,18 @@ public final class LotteryServiceProvider implements LotteryService
         /* Load values. */
         this.frequency = rootNode.getNode("frequency").getInt();
         this.duration = rootNode.getNode("duration").getInt();
+        this.weight = 0;
         
         /* Validate values. */
         if (this.frequency < 1)
             setFrequency(1);
         if (this.duration < 1)
             setFrequency(1);
+        
+        /* Calculate total weight. */
+        this.rootNode.getNode("prizes").getChildrenMap().values().forEach((node) -> {
+            this.weight += node.getNode("weight").getInt();
+        });
     }
     
     private void saveConfig() throws IOException
@@ -193,15 +201,14 @@ public final class LotteryServiceProvider implements LotteryService
                 Mineconomy.getLogger().error("Could not save prize set.", ex);
             }
         }
-        this.rootNode.getNode("total-weight").setValue(this.rootNode.getNode("total-weight").getInt(0) + weight);
+        this.weight += weight;
         this.saveConfig();
     }
     
     @Override
     public void deletePrize(String name) throws IOException
     {
-        this.rootNode.getNode("total-weight").setValue(this.rootNode.getNode("total-weight").getInt(0)
-            - this.rootNode.getNode("prizes", name, "weight").getInt(0));
+        this.weight -= this.rootNode.getNode("prizes", name, "weight").getInt(0);
         this.rootNode.getNode("prizes").removeChild(name);
         this.saveConfig();
     }
@@ -210,7 +217,7 @@ public final class LotteryServiceProvider implements LotteryService
     public LotteryPrize getRandomPrize()
     {
         ConfigurationNode prizeNode = this.rootNode.getNode("prizes");
-        int random = new Random().nextInt(this.rootNode.getNode("total-weight").getInt()) + 1;
+        int random = new Random().nextInt(this.weight) + 1;
         for (ConfigurationNode node : prizeNode.getChildrenMap().values())
         {
             random -= node.getNode("weight").getInt();
