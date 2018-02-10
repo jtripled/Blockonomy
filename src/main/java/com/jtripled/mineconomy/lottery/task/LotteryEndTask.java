@@ -9,11 +9,11 @@ import java.math.BigDecimal;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
+import java.util.UUID;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.event.cause.EventContext;
-import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.service.ProviderRegistration;
 import org.spongepowered.api.service.economy.EconomyService;
 import org.spongepowered.api.service.economy.account.UniqueAccount;
@@ -69,10 +69,15 @@ public class LotteryEndTask implements Runnable
             Sponge.getServer().getOnlinePlayers().forEach((Player player) -> {
                 player.sendMessage(msg);
             });
+            
+            BigDecimal bonus = this.getBonus(winner);
+            
             winner.sendMessage(Text.of(TextColors.GREEN, "You've won ",
                     TextColors.YELLOW, LotteryText.prizeText(this.lottery, economySrv),
+                    TextColors.GREEN, " with a bonus of ",
+                    TextColors.YELLOW, TextUtil.money(bonus, economySrv),
                     TextColors.GREEN, "!"));
-            this.award(winner, this.lottery.getTicketCost().multiply(BigDecimal.valueOf(this.lottery.getTotalTicketCount())));
+            this.award(winner, bonus);
         }
         else
         {
@@ -84,10 +89,26 @@ public class LotteryEndTask implements Runnable
         }
     }
     
+    private BigDecimal getBonus(Player winner)
+    {
+        int winnerCount = this.lottery.getPlayerTicketCount(winner);
+        int nextCount = 0;
+        
+        for (Integer count : this.lottery.getTickets().values())
+        {
+            if (count < winnerCount && count > nextCount)
+            {
+                nextCount = count;
+            }
+        }
+        
+        return BigDecimal.valueOf(nextCount).multiply(this.lottery.getTicketCost());
+    }
+    
     private Player getWinner()
     {
         int ticketCount = this.lottery.getTotalTicketCount();
-        Map<Player, Integer> tickets = this.lottery.getTickets();
+        Map<UUID, Integer> tickets = this.lottery.getTickets();
         
         Player winner = null;
         
@@ -96,21 +117,23 @@ public class LotteryEndTask implements Runnable
             do
             {
                 int random = new Random().nextInt(ticketCount) + 1;
-                for (Player player : tickets.keySet())
+                for (UUID player : tickets.keySet())
                 {
                     int t = tickets.get(player);
                     random -= t;
                     if (random <= 0)
                     {
-                        winner = player;
+                        Optional<Player> opPlayer = Sponge.getServer().getPlayer(player);
+                        if (opPlayer.isPresent())
+                            winner = opPlayer.get();
                         break;
                     }
                 }
                 if (winner == null) break;
                 if (!winner.isOnline())
                 {
-                    ticketCount -= tickets.get(winner);
-                    tickets.remove(winner);
+                    ticketCount -= tickets.get(winner.getUniqueId());
+                    tickets.remove(winner.getUniqueId());
                 }
             } while (!winner.isOnline());
         }
@@ -137,10 +160,9 @@ public class LotteryEndTask implements Runnable
         
         if (this.lottery.getItems() != null)
         {
-            for (ItemStack item : this.lottery.getItems())
-            {
+            this.lottery.getItems().forEach((item) -> {
                 player.getInventory().offer(item);
-            }
+            });
         }
     }
     

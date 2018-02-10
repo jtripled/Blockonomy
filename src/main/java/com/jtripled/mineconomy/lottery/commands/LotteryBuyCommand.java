@@ -3,7 +3,6 @@ package com.jtripled.mineconomy.lottery.commands;
 import com.jtripled.mineconomy.lottery.service.LotteryService;
 import com.jtripled.mineconomy.lottery.LotteryText;
 import com.jtripled.sponge.util.TextUtil;
-import java.math.BigDecimal;
 import java.util.Optional;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandException;

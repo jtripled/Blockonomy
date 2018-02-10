@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.cause.Cause;
@@ -25,7 +26,7 @@ public class Lottery
     
     private final int id;
     private final LotteryPrize prize;
-    private final Map<Player, Integer> tickets;
+    private final Map<UUID, Integer> tickets;
     
     private int ticketCount;
     private int minutesRemaining;
@@ -55,7 +56,7 @@ public class Lottery
         return this.prize.getItems();
     }
     
-    public Map<Player, Integer> getTickets()
+    public Map<UUID, Integer> getTickets()
     {
         return this.tickets;
     }
@@ -72,8 +73,8 @@ public class Lottery
     
     public int getPlayerTicketCount(Player player)
     {
-        return player != null && this.tickets.containsKey(player)
-                ? this.tickets.get(player)
+        return player != null && this.tickets.containsKey(player.getUniqueId())
+                ? this.tickets.get(player.getUniqueId())
                 : 0;
     }
     
@@ -82,7 +83,7 @@ public class Lottery
         if (player != null && player.isOnline())
         {
             this.ticketCount += count;
-            this.tickets.put(player, getPlayerTicketCount(player) + count);
+            this.tickets.put(player.getUniqueId(), getPlayerTicketCount(player) + count);
         }
     }
     
@@ -91,7 +92,7 @@ public class Lottery
         if (player != null)
         {
             this.ticketCount -= getPlayerTicketCount(player);
-            this.tickets.remove(player);
+            this.tickets.remove(player.getUniqueId());
         }
     }
     
