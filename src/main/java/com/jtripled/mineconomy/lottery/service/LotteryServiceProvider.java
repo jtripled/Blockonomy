@@ -11,7 +11,9 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import ninja.leaping.configurate.ConfigurationNode;
@@ -237,5 +239,16 @@ public final class LotteryServiceProvider implements LotteryService
             prize = new LotteryPrize(this.rootNode.getNode("prizes", name));
         }
         return prize;
+    }
+    
+    
+    @Override
+    public Map<String, LotteryPrize> getPrizes()
+    {
+        Map<String, LotteryPrize> prizes = new HashMap<>();
+        this.rootNode.getNode("prizes").getChildrenMap().forEach((Object key, ConfigurationNode node) -> {
+            prizes.put((String) key, new LotteryPrize(node));
+        });
+        return prizes;
     }
 }

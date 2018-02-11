@@ -5,6 +5,7 @@ import com.jtripled.mineconomy.lottery.LotteryPrize;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import org.spongepowered.api.item.inventory.ItemStack;
 
 /**
@@ -38,4 +39,6 @@ public interface LotteryService
     public LotteryPrize getRandomPrize();
     
     public LotteryPrize getNamedPrize(String name);
+    
+    public Map<String, LotteryPrize> getPrizes();
 }

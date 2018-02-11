@@ -1,11 +1,12 @@
 package com.jtripled.mineconomy.lottery.commands;
 
+import com.jtripled.mineconomy.lottery.LotteryPrize;
 import com.jtripled.mineconomy.lottery.service.LotteryService;
 import com.jtripled.mineconomy.lottery.LotteryText;
 import com.jtripled.sponge.util.TextUtil;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandException;
@@ -62,6 +63,16 @@ public class LotteryInfoCommand implements CommandExecutor
         List<Text> contents = new ArrayList<>();
         contents.add(LotteryText.infoFrequencyText(lottery.getFrequency()));
         contents.add(LotteryText.infoDurationText(lottery.getDuration()));
+        
+        Map<String, LotteryPrize> prizes = lottery.getPrizes();
+        
+        if (prizes.size() > 0)
+        {
+            contents.add(Text.of(TextColors.AQUA, "Prize sets:"));
+            prizes.forEach((String key, LotteryPrize prize) -> {
+                contents.add(Text.of(TextColors.YELLOW, key));
+            });
+        }
         
         /* Send contents to command sender. */
         PaginationList.builder()

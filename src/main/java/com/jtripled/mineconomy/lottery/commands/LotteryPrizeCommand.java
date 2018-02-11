@@ -14,5 +14,6 @@ public class LotteryPrizeCommand
         .permission("mineconomy.lottery.admin")
         .child(LotteryPrizeCreateCommand.SPEC, "create", "c")
         .child(LotteryPrizeDeleteCommand.SPEC, "delete", "d")
+        .child(LotteryPrizeDeleteCommand.SPEC, "info", "i")
         .build();
 }
