@@ -19,9 +19,11 @@ import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.game.GameReloadEvent;
 import org.spongepowered.api.event.game.state.GameInitializationEvent;
 import org.spongepowered.api.event.game.state.GamePreInitializationEvent;
+import org.spongepowered.api.event.service.ChangeServiceProviderEvent;
 import org.spongepowered.api.plugin.Dependency;
 import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.plugin.PluginContainer;
+import org.spongepowered.api.service.economy.EconomyService;
 
 /**
  *
@@ -58,6 +60,12 @@ public class Mineconomy
 
     private ConfigurationNode rootNode;
     
+    private EconomyService economy;
+    
+    private PaydayModule payday;
+    
+    private LotteryModule lottery;
+    
     public static Mineconomy getInstance()
     {
         return INSTANCE;
@@ -76,6 +84,21 @@ public class Mineconomy
     public static Path getConfigDirectory()
     {
         return INSTANCE.configDir;
+    }
+    
+    public static EconomyService getEconomy()
+    {
+        return INSTANCE.economy;
+    }
+    
+    public static PaydayModule getPayday()
+    {
+        return INSTANCE.payday;
+    }
+    
+    public static LotteryModule getLottery()
+    {
+        return INSTANCE.lottery;
     }
     
     private void loadConfig() throws IOException
@@ -108,11 +131,20 @@ public class Mineconomy
     {
         if (rootNode.getNode("modules", "lottery").getBoolean(false))
         {
-            Sponge.getEventManager().registerListeners(this, new LotteryModule());
+            Sponge.getEventManager().registerListeners(this, lottery = new LotteryModule());
         }
         if (rootNode.getNode("modules", "payday").getBoolean(false))
         {
-            Sponge.getEventManager().registerListeners(this, new PaydayModule());
+            Sponge.getEventManager().registerListeners(this, payday = new PaydayModule());
+        }
+    }
+    
+    @Listener
+    public void onChangeServiceProvider(ChangeServiceProviderEvent event)
+    {
+        if (event.getService() == EconomyService.class)
+        {
+            this.economy = (EconomyService) event.getNewProvider();
         }
     }
 }

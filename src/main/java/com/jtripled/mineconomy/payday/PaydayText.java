@@ -1,5 +1,6 @@
 package com.jtripled.mineconomy.payday;
 
+import com.jtripled.mineconomy.Mineconomy;
 import com.jtripled.sponge.util.TextUtil;
 import java.math.BigDecimal;
 import org.spongepowered.api.service.economy.EconomyService;
@@ -13,16 +14,16 @@ import org.spongepowered.api.text.format.TextColors;
  */
 public class PaydayText
 {
-    public static Text paydayText(BigDecimal amount, EconomyService economy)
+    public static Text paydayText(BigDecimal amount)
     {
         return Text.of(TextColors.GREEN, "You have earned a paycheck of ", TextColors.YELLOW,
-                TextUtil.money(amount, economy), TextColors.GREEN, ".");
+                TextUtil.money(amount, Mineconomy.getEconomy()), TextColors.GREEN, ".");
     }
     
-    public static Text joinBonusText(BigDecimal amount, EconomyService economy)
+    public static Text joinBonusText(BigDecimal amount)
     {
         return Text.of(TextColors.GREEN, "Welcome to our server! You've been awarded ", TextColors.YELLOW,
-                TextUtil.money(amount, economy), TextColors.GREEN, "!");
+                TextUtil.money(amount, Mineconomy.getEconomy()), TextColors.GREEN, "!");
     }
     
     public static Text setFrequencyText(int minutes)
@@ -31,16 +32,16 @@ public class PaydayText
                 TextUtil.pluralize(minutes, "minute", "minutes"), TextColors.GREEN, ".");
     }
     
-    public static Text setAmountText(BigDecimal amount, EconomyService economy)
+    public static Text setAmountText(BigDecimal amount)
     {
         return Text.of(TextColors.GREEN, "You've set the payday amount to ", TextColors.YELLOW,
-                TextUtil.money(amount, economy), TextColors.GREEN, ".");
+                TextUtil.money(amount, Mineconomy.getEconomy()), TextColors.GREEN, ".");
     }
     
-    public static Text setJoinBonusText(BigDecimal amount, EconomyService economy)
+    public static Text setJoinBonusText(BigDecimal amount)
     {
         return Text.of(TextColors.GREEN, "You've set the payday join bonus to ", TextColors.YELLOW,
-                TextUtil.money(amount, economy), TextColors.GREEN, ".");
+                TextUtil.money(amount, Mineconomy.getEconomy()), TextColors.GREEN, ".");
     }
     
     public static Text invalidFrequencyText()
@@ -49,16 +50,16 @@ public class PaydayText
                 TextColors.YELLOW, "1 minute", TextColors.RED, ".");
     }
     
-    public static Text invalidAmountText(EconomyService economy)
+    public static Text invalidAmountText()
     {
         return Text.of(TextColors.RED, "You cannot set payday amount below ",
-                TextColors.YELLOW, TextUtil.money(BigDecimal.valueOf(0.00), economy), TextColors.RED, ".");
+                TextColors.YELLOW, TextUtil.money(BigDecimal.valueOf(0.00), Mineconomy.getEconomy()), TextColors.RED, ".");
     }
     
-    public static Text invalidJoinBonusText(EconomyService economy)
+    public static Text invalidJoinBonusText()
     {
         return Text.of(TextColors.RED, "You cannot set payday join bonus below ",
-                TextColors.YELLOW, TextUtil.money(BigDecimal.valueOf(0.00), economy), TextColors.RED, ".");
+                TextColors.YELLOW, TextUtil.money(BigDecimal.valueOf(0.00), Mineconomy.getEconomy()), TextColors.RED, ".");
     }
     
     public static Text setFrequencyErrorText()
@@ -84,19 +85,19 @@ public class PaydayText
                 TextColors.YELLOW, TextUtil.pluralize(frequency, "minute", "minutes"));
     }
     
-    public static Text infoAmountText(BigDecimal amount, EconomyService economy)
+    public static Text infoAmountText(BigDecimal amount)
     {
         return Text.of(Text.builder("Amount: ").color(TextColors.AQUA)
                 .onClick(TextActions.suggestCommand("/payday amount 20.00"))
                 .onHover(TextActions.showText(Text.of("Click here to modify the amount."))).build(),
-                TextColors.YELLOW, TextUtil.money(amount, economy));
+                TextColors.YELLOW, TextUtil.money(amount, Mineconomy.getEconomy()));
     }
     
-    public static Text infoJoinBonusText(BigDecimal joinBonus, EconomyService economy)
+    public static Text infoJoinBonusText(BigDecimal joinBonus)
     {
         return Text.of(Text.builder("Join Bonus: ").color(TextColors.AQUA)
                 .onClick(TextActions.suggestCommand("/payday joinbonus 200.00"))
                 .onHover(TextActions.showText(Text.of("Click here to modify the join bonus."))).build(),
-                TextColors.YELLOW, TextUtil.money(joinBonus, economy));
+                TextColors.YELLOW, TextUtil.money(joinBonus, Mineconomy.getEconomy()));
     }
 }

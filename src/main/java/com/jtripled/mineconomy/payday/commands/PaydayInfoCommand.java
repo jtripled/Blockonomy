@@ -1,18 +1,14 @@
 package com.jtripled.mineconomy.payday.commands;
 
-import com.jtripled.sponge.util.TextUtil;
-import java.util.Optional;
-import org.spongepowered.api.Sponge;
+import com.jtripled.mineconomy.Mineconomy;
+import com.jtripled.mineconomy.payday.PaydayModule;
 import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.command.spec.CommandExecutor;
 import org.spongepowered.api.command.spec.CommandSpec;
-import org.spongepowered.api.service.ProviderRegistration;
-import org.spongepowered.api.service.economy.EconomyService;
 import org.spongepowered.api.text.Text;
-import com.jtripled.mineconomy.payday.service.PaydayService;
 import com.jtripled.mineconomy.payday.PaydayText;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,34 +30,11 @@ public class PaydayInfoCommand implements CommandExecutor
     @Override
     public CommandResult execute(CommandSource src, CommandContext args) throws CommandException
     {
-        Optional<ProviderRegistration<PaydayService>> opPayday
-                = Sponge.getServiceManager().getRegistration(PaydayService.class);
-        
-        /* Could not find payday service. */
-        if (!opPayday.isPresent())
-        {
-            src.sendMessage(TextUtil.serviceNotFound("PaydayService"));
-            return CommandResult.empty();
-        }
-        
-        Optional<ProviderRegistration<EconomyService>> opEconomy
-                = Sponge.getServiceManager().getRegistration(EconomyService.class);
-        
-        /* Could not find economy service. */
-        if (!opEconomy.isPresent())
-        {
-            src.sendMessage(TextUtil.serviceNotFound("EconomyService"));
-            return CommandResult.empty();
-        }
-        
-        PaydayService payday = opPayday.get().getProvider();
-        EconomyService economy = opEconomy.get().getProvider();
-        
         /* Create pagination contents. */
         List<Text> contents = new ArrayList<>();
-        contents.add(PaydayText.infoFrequencyText(payday.getFrequency()));
-        contents.add(PaydayText.infoAmountText(payday.getAmount(), economy));
-        contents.add(PaydayText.infoJoinBonusText(payday.getJoinBonus(), economy));
+        contents.add(PaydayText.infoFrequencyText(Mineconomy.getPayday().getFrequency()));
+        contents.add(PaydayText.infoAmountText(Mineconomy.getPayday().getAmount()));
+        contents.add(PaydayText.infoJoinBonusText(Mineconomy.getPayday().getJoinBonus()));
         
         /* Send contents to command sender. */
         PaginationList.builder()
